@@ -25,11 +25,11 @@
     <div id="root"></div>
 
     <script type="text/babel">
-        const { useState, useEffect, useCallback } = React;
+        const { useState, useEffect, useCallback, useRef } = React;
 
-        // --- INLINE SVG ICONS (Replaces external library for non-technical setup) ---
+        // --- INLINE SVG ICONS ---
         const IconUser = ({size, className}) => <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>;
-        const IconTrophy = ({size, className}) => <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>;
+        const IconTrophy = ({size, className}) => <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55-.47.98-.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>;
         const IconBook = ({size, className}) => <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>;
         const IconSparkles = ({size, className}) => <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>;
         const IconClock = ({size, className}) => <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>;
@@ -40,26 +40,59 @@
         const IconChevron = ({size, className}) => <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>;
         const IconRotate = ({size, className}) => <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>;
 
-
-        // --- CARD DATABASE (Embedded JSON) ---
+        // --- CARD DATABASE ---
         const CARD_DATABASE = [
-            { "id": "intro", "character": "THE OBSERVER", "prompt": "You've been talking about this for years. The spreadsheets are done. The 'safe' path is rotting. You're standing at the edge. Jump?", "left": { "label": "Jump", "focus": 0, "energy": 0, "money": 0, "mrr": 0, "days": 0 }, "right": { "label": "Jump", "focus": 0, "energy": 0, "money": 0, "mrr": 0, "days": 0 } },
-            { "id": "c1", "character": "THE INNER VOICE", "prompt": "Day 1. The bridge is behind you. How do we start?", "left": { "label": "Quit Job", "focus": -5, "energy": -10, "money": -30, "mrr": 500, "days": 7 }, "right": { "label": "Side Hustle", "focus": -10, "energy": -15, "money": 5, "mrr": 100, "days": 14 } },
-            { "id": "c2", "character": "READ & REFLECT", "weight": 0.15, "minDay": 60, "prompt": "Read 'Buy Back Your Time' by Dan Martell?", "left": { "label": "Study", "focus": 15, "energy": 20, "money": -5, "mrr": 0, "days": 3, "perk": "buyBackTime" }, "right": { "label": "Ignore", "focus": -5, "energy": -5, "money": 0, "mrr": 50, "days": 5 } },
-            { "id": "c3", "character": "READ & REFLECT", "weight": 0.15, "minDay": 90, "prompt": "Study Naval's 'Almanack' for leverage?", "left": { "label": "Seek", "focus": 5, "energy": 5, "money": 0, "mrr": 800, "days": 4, "perk": "leverage" }, "right": { "label": "Ignore", "focus": -10, "energy": -5, "money": 0, "mrr": 200, "days": 6 } },
-            { "id": "c7", "character": "THE USER", "weight": 0.5, "prompt": "Product is buggy. Ship now or polish?", "left": { "label": "Ship It", "focus": -10, "energy": -5, "money": 0, "mrr": 150, "days": 3 }, "right": { "label": "Polish", "focus": -5, "energy": -15, "money": -2, "mrr": 50, "days": 10 } },
-            { "id": "c8", "character": "THE CODE", "weight": 0.5, "prompt": "Tech debt is slowing you down. Rewrite?", "left": { "label": "Rewrite", "focus": 25, "energy": -20, "money": 0, "mrr": 0, "days": 14 }, "right": { "label": "Patch", "focus": -15, "energy": -5, "money": 0, "mrr": 0, "days": 2 } },
-            { "id": "c13", "character": "THE GROWER", "weight": 0.4, "prompt": "Launch on Product Hunt today?", "left": { "label": "Launch", "focus": -15, "energy": -25, "money": -5, "mrr": 1200, "days": 2 }, "right": { "label": "Wait", "focus": 5, "energy": 5, "money": 0, "mrr": -100, "days": 1 } },
-            { "id": "c19", "character": "THE CLOUD", "weight": 0.4, "prompt": "AWS bill tripled. Spend 5 days optimizing?", "left": { "label": "Optimize", "focus": 10, "energy": -10, "money": 0, "mrr": 0, "days": 5 }, "right": { "label": "Pay", "focus": 0, "energy": 0, "money": -10, "mrr": 0, "days": 1 } },
-            { "id": "c22", "character": "THE BODY", "weight": 0.4, "prompt": "You have a fever. Work or Sleep?", "left": { "label": "Work", "focus": -20, "energy": -40, "money": 0, "mrr": 100, "days": 1 }, "right": { "label": "Sleep", "focus": 5, "energy": 25, "money": 0, "mrr": 0, "days": 2 } },
-            { "id": "c27", "character": "THE OUTAGE", "weight": 0.4, "prompt": "Servers are down. It's 3 AM.", "left": { "label": "Fix Now", "focus": -5, "energy": -25, "money": 0, "mrr": -50, "days": 1 }, "right": { "label": "Sleep", "focus": -15, "energy": 10, "money": 0, "mrr": -300, "days": 1 } },
-            { "id": "c30", "character": "THE BURN", "weight": 0.3, "prompt": "You feel completely empty today. Stare at the screen?", "left": { "label": "Force It", "focus": -20, "energy": -15, "money": 0, "mrr": 50, "days": 3 }, "right": { "label": "Walk Away", "focus": 15, "energy": 20, "money": 0, "mrr": 0, "days": 1 } },
-            { "id": "c40", "character": "THE AI", "weight": 0.5, "prompt": "Investors only care about AI. Add an AI wrapper feature?", "left": { "label": "Grift", "focus": -20, "energy": -15, "money": -1, "mrr": 1000, "days": 10 }, "right": { "label": "Stay Pure", "focus": 10, "energy": 5, "money": 0, "mrr": 100, "days": 0 } }
+            { "id": "intro", "character": "THE OBSERVER", "prompt": "You've been talking about this for years. The spreadsheets are done. The 'safe' path is rotting. You're standing at the edge. Jump?", 
+              "left": { "label": "Jump", "focus": 0, "energy": 0, "money": 0, "mrr": 0, "days": 0, "nextCard": "naming" }, 
+              "right": { "label": "Jump", "focus": 0, "energy": 0, "money": 0, "mrr": 0, "days": 0, "nextCard": "naming" } 
+            },
+            { "id": "c1", "character": "THE INNER VOICE", "prompt": "Day 1. The bridge is behind you. How do we start?", 
+              "left": { "label": "Quit Job", "focus": -5, "energy": -10, "money": -30, "mrr": 500, "days": 7 }, 
+              "right": { "label": "Side Hustle", "focus": -10, "energy": -15, "money": 5, "mrr": 100, "days": 14 } 
+            },
+            { "id": "c2", "character": "READ & REFLECT", "weight": 0.1, "minDay": 30, "prompt": "Read 'Buy Back Your Time' by Dan Martell?", 
+              "left": { "label": "Study", "focus": 15, "energy": 20, "money": -5, "mrr": 0, "days": 3, "perk": "buyBackTime" }, 
+              "right": { "label": "Ignore", "focus": -5, "energy": -5, "money": 0, "mrr": 50, "days": 5 } 
+            },
+            { "id": "c3", "character": "READ & REFLECT", "weight": 0.1, "minDay": 60, "prompt": "Study Naval's 'Almanack' for leverage?", 
+              "left": { "label": "Seek", "focus": 5, "energy": 5, "money": 0, "mrr": 800, "days": 4, "perk": "leverage" }, 
+              "right": { "label": "Ignore", "focus": -10, "energy": -5, "money": 0, "mrr": 200, "days": 6 } 
+            },
+            { "id": "c7", "character": "THE USER", "weight": 0.6, "prompt": "Product is buggy. Ship now or polish?", 
+              "left": { "label": "Ship It", "focus": -10, "energy": -5, "money": 0, "mrr": 150, "days": 3 }, 
+              "right": { "label": "Polish", "focus": -5, "energy": -15, "money": -2, "mrr": 50, "days": 10 } 
+            },
+            { "id": "c8", "character": "THE CODE", "weight": 0.6, "prompt": "Tech debt is slowing you down. Rewrite?", 
+              "left": { "label": "Rewrite", "focus": 25, "energy": -20, "money": 0, "mrr": 0, "days": 14 }, 
+              "right": { "label": "Patch", "focus": -15, "energy": -5, "money": 0, "mrr": 0, "days": 2 } 
+            },
+            { "id": "c13", "character": "THE GROWER", "weight": 0.4, "minDay": 20, "prompt": "Launch on Product Hunt today?", 
+              "left": { "label": "Launch", "focus": -15, "energy": -25, "money": -5, "mrr": 1200, "days": 2 }, 
+              "right": { "label": "Wait", "focus": 5, "energy": 5, "money": 0, "mrr": -100, "days": 1 } 
+            },
+            { "id": "c19", "character": "THE CLOUD", "weight": 0.4, "prompt": "AWS bill tripled. Spend 5 days optimizing?", 
+              "left": { "label": "Optimize", "focus": 10, "energy": -10, "money": 0, "mrr": 0, "days": 5 }, 
+              "right": { "label": "Pay", "focus": 0, "energy": 0, "money": -10, "mrr": 0, "days": 1 } 
+            },
+            { "id": "c22", "character": "THE BODY", "weight": 0.5, "prompt": "You have a fever. Work or Sleep?", 
+              "left": { "label": "Work", "focus": -20, "energy": -40, "money": 0, "mrr": 100, "days": 1 }, 
+              "right": { "label": "Sleep", "focus": 5, "energy": 25, "money": 0, "mrr": 0, "days": 2 } 
+            },
+            { "id": "c27", "character": "THE OUTAGE", "weight": 0.4, "prompt": "Servers are down. It's 3 AM.", 
+              "left": { "label": "Fix Now", "focus": -5, "energy": -25, "money": 0, "mrr": -50, "days": 1 }, 
+              "right": { "label": "Sleep", "focus": -15, "energy": 10, "money": 0, "mrr": -300, "days": 1 } 
+            },
+            { "id": "c30", "character": "THE BURN", "weight": 0.3, "prompt": "You feel completely empty today. Force it?", 
+              "left": { "label": "Force It", "focus": -20, "energy": -15, "money": 0, "mrr": 50, "days": 3 }, 
+              "right": { "label": "Walk Away", "focus": 15, "energy": 20, "money": 0, "mrr": 0, "days": 1 } 
+            },
+            { "id": "c40", "character": "THE AI", "weight": 0.5, "prompt": "Investors only care about AI. Add an AI wrapper?", 
+              "left": { "label": "Grift", "focus": -20, "energy": -15, "money": -1, "mrr": 1000, "days": 10 }, 
+              "right": { "label": "Stay Pure", "focus": 10, "energy": 5, "money": 0, "mrr": 100, "days": 0 } 
+            }
         ];
 
-        // --- GAME LOGIC ---
-        const TOTAL_WEEKS = 48; 
-        const PRODUCT_NAME_IDEAS = ["FocusFlow", "SaaSly", "HyperGrowth", "LeanStack", "Solopreneur.ai", "Nexus", "Draft", "Pulse", "ShipFast", "Burner", "Vault", "Beacon", "Zenith", "Koda", "Mojo", "Quill", "Vector", "Orbit"];
+        const PRODUCT_NAME_IDEAS = ["FocusFlow", "SaaSly", "HyperGrowth", "LeanStack", "Nexus", "Pulse", "ShipFast", "Vault", "Zenith", "Koda", "Vector", "Orbit"];
 
         const INITIAL_STATE = {
             productName: '',
@@ -86,50 +119,63 @@
             const [exitDir, setExitDir] = useState(null);
             const [tooltip, setTooltip] = useState(null);
             const [tempName, setTempName] = useState("");
+            
+            // This ref tracks cards shown in the current "deck" cycle to avoid pooling
+            const cycleHistory = useRef([]);
 
             const threshold = 120;
             const metabolicState = game.energy < 25 ? 'Lethargy' : 'Focus';
 
-            const pickNewCard = useCallback((forcedId = null, updatedHistory = game.history) => {
+            const pickNewCard = useCallback((forcedId = null) => {
                 setExitDir(null);
                 setDragOffset({ x: 0, y: 0 });
                 
                 if (forcedId) {
-                    setCurrentCard(CARD_DATABASE.find(c => c.id === forcedId));
+                    const card = CARD_DATABASE.find(c => c.id === forcedId);
+                    setCurrentCard(card);
                     return;
                 }
 
+                // Filter cards based on game state and current cycle
                 let eligible = CARD_DATABASE.filter(c => {
+                    // Exclude special cards
                     if (c.id === "intro" || c.id === "c1") return false;
-                    if (updatedHistory.includes(c.id)) return false;
+                    // Exclude cards already seen in this cycle (the "reshuffle" logic)
+                    if (cycleHistory.current.includes(c.id)) return false;
+                    // Check perks/days requirements
                     if (c.requirePerk && !game.perks[c.requirePerk]) return false;
                     if (c.minDay && game.daysElapsed < c.minDay) return false;
                     return true;
                 });
 
+                // If no cards are eligible, reset the cycle history (reshuffle)
                 if (eligible.length === 0) {
-                    updatedHistory = [];
-                    eligible = CARD_DATABASE.filter(c => c.id !== "intro" && c.id !== "c1");
+                    cycleHistory.current = [];
+                    eligible = CARD_DATABASE.filter(c => 
+                        c.id !== "intro" && 
+                        c.id !== "c1" && 
+                        (!c.minDay || game.daysElapsed >= c.minDay)
+                    );
                 }
 
+                // Weighted random selection
                 const totalWeight = eligible.reduce((acc, c) => acc + (c.weight || 1), 0);
                 let random = Math.random() * totalWeight;
+                
                 for (const card of eligible) {
                     if (random < (card.weight || 1)) {
                         setCurrentCard(card);
-                        setGame(prev => ({ ...prev, history: [...updatedHistory, card.id] }));
+                        cycleHistory.current.push(card.id);
+                        setGame(prev => ({ ...prev, history: [...prev.history, card.id] }));
                         break;
                     }
                     random -= (card.weight || 1);
                 }
-            }, [game.history, game.perks, game.daysElapsed]);
+            }, [game.perks, game.daysElapsed]);
 
-            useEffect(() => { pickNewCard("intro"); }, [pickNewCard]);
-
-            const shuffleName = () => {
-                const random = PRODUCT_NAME_IDEAS[Math.floor(Math.random() * PRODUCT_NAME_IDEAS.length)];
-                setTempName(random);
-            };
+            useEffect(() => { 
+                pickNewCard("intro"); 
+            }, []);
 
             const handleDecision = (direction) => {
                 const effect = direction === 'left' ? currentCard.left : currentCard.right;
@@ -137,10 +183,9 @@
                 setAnimatingStat(true);
                 setTimeout(() => setAnimatingStat(false), 500);
 
-                const isIntro = currentCard.id === "intro";
-
                 setTimeout(() => {
-                    if (isIntro) {
+                    // Logic for branching
+                    if (effect.nextCard === "naming") {
                         setGame(prev => ({ ...prev, namingPhase: true }));
                         return;
                     }
@@ -153,24 +198,45 @@
                         const nextState = {
                             ...prev,
                             perks: nextPerks,
-                            daysElapsed: prev.daysElapsed + Math.ceil(effect.days * timeMultiplier),
-                            focus: Math.min(100, Math.max(0, prev.focus + effect.focus)),
-                            energy: Math.min(100, Math.max(0, prev.energy + effect.energy)),
-                            money: Math.max(0, prev.money + effect.money),
-                            mrr: prev.mrr + (nextPerks.leverage ? Math.ceil(effect.mrr * 1.2) : effect.mrr),
+                            daysElapsed: prev.daysElapsed + Math.ceil((effect.days || 0) * timeMultiplier),
+                            focus: Math.min(100, Math.max(0, prev.focus + (effect.focus || 0))),
+                            energy: Math.min(100, Math.max(0, prev.energy + (effect.energy || 0))),
+                            money: Math.max(0, prev.money + (effect.money || 0)),
+                            mrr: prev.mrr + (nextPerks.leverage ? Math.ceil((effect.mrr || 0) * 1.2) : (effect.mrr || 0)),
                         };
 
-                        if (Math.floor(nextState.daysElapsed / 7) >= TOTAL_WEEKS) return { ...nextState, isGameOver: true, gameOverReason: "Runway ended. The year is up." };
-                        if (nextState.energy <= 0) return { ...nextState, isGameOver: true, gameOverReason: "Health collapsed." };
-                        if (nextState.money <= 0) return { ...nextState, isGameOver: true, gameOverReason: "Bankrupt." };
-                        if (nextState.mrr >= 10000) return { ...nextState, isGameOver: true, gameOverReason: "Success! $10k MRR reached." };
+                        // Win/Loss conditions
+                        if (nextState.mrr >= 10000) return { ...nextState, isGameOver: true, gameOverReason: "Unicorn Status! $10k MRR reached." };
+                        if (Math.floor(nextState.daysElapsed / 7) >= 48) return { ...nextState, isGameOver: true, gameOverReason: "Runway ended. The year is up." };
+                        if (nextState.energy <= 0) return { ...nextState, isGameOver: true, gameOverReason: "Burnout. Total physical collapse." };
+                        if (nextState.money <= 0) return { ...nextState, isGameOver: true, gameOverReason: "Bankrupt. Back to the 9-to-5." };
 
                         return nextState;
                     });
-                    pickNewCard();
+
+                    // Check for specific forced follow-up cards
+                    if (effect.nextCard && effect.nextCard !== "naming") {
+                        pickNewCard(effect.nextCard);
+                    } else {
+                        pickNewCard();
+                    }
                 }, 400);
             };
 
+            const confirmName = () => {
+                if (!tempName.trim()) return;
+                setGame(prev => ({ ...prev, productName: tempName, namingPhase: false }));
+                pickNewCard("c1");
+            };
+
+            const resetGame = () => {
+                cycleHistory.current = [];
+                setGame(INITIAL_STATE);
+                setTempName("");
+                pickNewCard("intro");
+            };
+
+            // Drag Handlers
             const onStart = (e) => {
                 if (game.isGameOver || game.namingPhase) return;
                 const clientX = e.touches ? e.touches[0].clientX : e.clientX;
@@ -195,16 +261,10 @@
                 setDragStart(null);
             };
 
-            const confirmName = () => {
-                if (!tempName.trim()) return;
-                setGame(prev => ({ ...prev, productName: tempName, namingPhase: false }));
-                pickNewCard("c1");
-            };
-
             const currentWeek = Math.floor(game.daysElapsed / 7);
 
             return (
-                <div className="min-h-screen flex flex-col" onMouseMove={onMove} onMouseUp={onEnd} onMouseLeave={onEnd} onTouchMove={onMove} onTouchEnd={onEnd}>
+                <div className="min-h-screen flex flex-col select-none overflow-hidden" onMouseMove={onMove} onMouseUp={onEnd} onMouseLeave={onEnd} onTouchMove={onMove} onTouchEnd={onEnd}>
                     {tooltip && (
                         <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/20 backdrop-blur-sm" onClick={() => setTooltip(null)}>
                             <div className="bg-white border-2 border-[#1A1A1A] p-6 max-w-xs shadow-[8px_8px_0px_0px_rgba(26,26,26,1)]" onClick={e => e.stopPropagation()}>
@@ -239,12 +299,13 @@
                             <div className="max-w-md w-full bg-white border-4 border-[#1A1A1A] p-10 text-center shadow-[16px_16px_0px_0px_rgba(26,26,26,1)]">
                                 <div className="flex justify-center mb-4 text-[#00A86B]"><IconTrophy size={40} /></div>
                                 <h2 className="text-2xl font-serif font-black mb-2 uppercase tracking-widest">Year Review</h2>
+                                <p className="mb-2 font-bold text-xl">${game.mrr.toLocaleString()} MRR</p>
                                 <p className="mb-6 font-serif italic text-lg opacity-80">"{game.gameOverReason}"</p>
-                                <button onClick={() => { setGame(INITIAL_STATE); setTempName(""); pickNewCard("intro", []); }} className="w-full py-4 bg-[#1A1A1A] text-white font-bold flex items-center justify-center gap-3 active:scale-95"><IconRotate size={16} /> REBOOT</button>
+                                <button onClick={resetGame} className="w-full py-4 bg-[#1A1A1A] text-white font-bold flex items-center justify-center gap-3 active:scale-95 transition-transform"><IconRotate size={16} /> REBOOT</button>
                             </div>
                         ) : game.namingPhase ? (
                             <div className="max-w-md w-full bg-white border-4 border-[#1A1A1A] p-10 shadow-[12px_12px_0px_0px_rgba(26,26,26,1)]">
-                                <h2 className="text-xs font-bold uppercase tracking-widest opacity-40 mb-6">Step 2: Manifest Your Reality</h2>
+                                <h2 className="text-xs font-bold uppercase tracking-widest opacity-40 mb-6">Establish Your Brand</h2>
                                 <div className="space-y-4">
                                     <div className="relative">
                                         <input 
@@ -254,14 +315,9 @@
                                             placeholder="The Project Name..."
                                             className="w-full bg-transparent border-b-2 border-[#1A1A1A] p-2 text-2xl font-serif italic focus:outline-none placeholder:opacity-20"
                                         />
-                                        <button onClick={shuffleName} className="absolute right-2 top-3 text-[#1A1A1A]/40 hover:text-[#00A86B] transition-colors"><IconRefresh size={20} /></button>
+                                        <button onClick={() => setTempName(PRODUCT_NAME_IDEAS[Math.floor(Math.random() * PRODUCT_NAME_IDEAS.length)])} className="absolute right-2 top-3 text-[#1A1A1A]/40 hover:text-[#00A86B] transition-colors"><IconRefresh size={20} /></button>
                                     </div>
-                                    <p className="text-[10px] opacity-40 leading-relaxed uppercase">The name doesn't matter, until it does. Pick something that makes you want to work.</p>
-                                    <button 
-                                        onClick={confirmName}
-                                        disabled={!tempName.trim()}
-                                        className="w-full py-4 bg-[#1A1A1A] text-white font-bold flex items-center justify-center gap-2 disabled:opacity-20 transition-opacity uppercase tracking-widest"
-                                    >
+                                    <button onClick={confirmName} disabled={!tempName.trim()} className="w-full py-4 bg-[#1A1A1A] text-white font-bold flex items-center justify-center gap-2 disabled:opacity-20 transition-opacity uppercase tracking-widest">
                                         Establish {tempName || 'Startup'} <IconChevron size={16} />
                                     </button>
                                 </div>
@@ -270,7 +326,7 @@
                             <>
                                 <div className="mb-6 text-center">
                                     <div className="text-4xl font-serif font-black tracking-tighter">${game.mrr.toLocaleString()} <span className="text-sm opacity-30 font-mono">MRR</span></div>
-                                    <div className="flex gap-2 justify-center mt-2">
+                                    <div className="flex gap-2 justify-center mt-2 h-6">
                                         {Object.entries(game.perks).map(([key, active]) => active && (
                                             <div key={key} className="bg-[#1A1A1A] text-white text-[7px] px-2 py-0.5 rounded-full uppercase tracking-widest flex items-center gap-1"><IconSparkles size={8} /> {key}</div>
                                         ))}
@@ -286,7 +342,10 @@
                                     {currentCard && (
                                         <div 
                                             onMouseDown={onStart} onTouchStart={onStart}
-                                            style={{ transform: exitDir ? `translateX(${exitDir === 'left' ? '-150%' : '150%'}) rotate(${exitDir === 'left' ? '-20deg' : '20deg'})` : `translate(${dragOffset.x}px, ${dragOffset.y}px) rotate(${dragOffset.x / 15}deg)`, transition: isDragging ? 'none' : 'all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)' }}
+                                            style={{ 
+                                                transform: exitDir ? `translateX(${exitDir === 'left' ? '-150%' : '150%'}) rotate(${exitDir === 'left' ? '-20deg' : '20deg'})` : `translate(${dragOffset.x}px, ${dragOffset.y}px) rotate(${dragOffset.x / 15}deg)`, 
+                                                transition: isDragging ? 'none' : 'all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)' 
+                                            }}
                                             className={`bg-white border-2 border-[#1A1A1A] rounded-sm p-10 flex flex-col items-center justify-between h-full w-full absolute inset-0 shadow-[8px_8px_0px_0px_rgba(26,26,26,0.1)] cursor-grab active:cursor-grabbing ${metabolicState === 'Lethargy' ? 'sepia-[0.2]' : ''}`}
                                         >
                                             <div className="flex flex-col items-center pointer-events-none">
