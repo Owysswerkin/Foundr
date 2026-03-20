@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Solo Founder Simulator</title>
+    
+    <!-- Import React, ReactDOM, and Babel to run React directly in the browser -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Import Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Import Fonts -->
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,400;0,700;0,900;1,400&display=swap');
+        .font-serif { font-family: 'Crimson Pro', serif; }
+        body { background-color: #F4F1EA; touch-action: none; overscroll-behavior: none; }
+        .perspective-1000 { perspective: 1000px; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useCallback } = React;
+
+        // --- INLINE SVG ICONS (Replaces external library for non-technical setup) ---
+        const IconUser = ({size, className}) => <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>;
+        const IconTrophy = ({size, className}) => <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>;
+        const IconBook = ({size, className}) => <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>;
+        const IconSparkles = ({size, className}) => <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>;
+        const IconClock = ({size, className}) => <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>;
+        const IconCoffee = ({size, className}) => <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 8h1a4 4 0 1 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"/><line x1="6" x2="6" y1="2" y2="4"/><line x1="10" x2="10" y1="2" y2="4"/><line x1="14" x2="14" y1="2" y2="4"/></svg>;
+        const IconDollar = ({size, className}) => <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" x2="12" y1="2" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>;
+        const IconInfo = ({size, className}) => <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>;
+        const IconRefresh = ({size, className}) => <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>;
+        const IconChevron = ({size, className}) => <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>;
+        const IconRotate = ({size, className}) => <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>;
+
+
+        // --- CARD DATABASE (Embedded JSON) ---
+        const CARD_DATABASE = [
+            { "id": "intro", "character": "THE OBSERVER", "prompt": "You've been talking about this for years. The spreadsheets are done. The 'safe' path is rotting. You're standing at the edge. Jump?", "left": { "label": "Jump", "focus": 0, "energy": 0, "money": 0, "mrr": 0, "days": 0 }, "right": { "label": "Jump", "focus": 0, "energy": 0, "money": 0, "mrr": 0, "days": 0 } },
+            { "id": "c1", "character": "THE INNER VOICE", "prompt": "Day 1. The bridge is behind you. How do we start?", "left": { "label": "Quit Job", "focus": -5, "energy": -10, "money": -30, "mrr": 500, "days": 7 }, "right": { "label": "Side Hustle", "focus": -10, "energy": -15, "money": 5, "mrr": 100, "days": 14 } },
+            { "id": "c2", "character": "READ & REFLECT", "weight": 0.15, "minDay": 60, "prompt": "Read 'Buy Back Your Time' by Dan Martell?", "left": { "label": "Study", "focus": 15, "energy": 20, "money": -5, "mrr": 0, "days": 3, "perk": "buyBackTime" }, "right": { "label": "Ignore", "focus": -5, "energy": -5, "money": 0, "mrr": 50, "days": 5 } },
+            { "id": "c3", "character": "READ & REFLECT", "weight": 0.15, "minDay": 90, "prompt": "Study Naval's 'Almanack' for leverage?", "left": { "label": "Seek", "focus": 5, "energy": 5, "money": 0, "mrr": 800, "days": 4, "perk": "leverage" }, "right": { "label": "Ignore", "focus": -10, "energy": -5, "money": 0, "mrr": 200, "days": 6 } },
+            { "id": "c7", "character": "THE USER", "weight": 0.5, "prompt": "Product is buggy. Ship now or polish?", "left": { "label": "Ship It", "focus": -10, "energy": -5, "money": 0, "mrr": 150, "days": 3 }, "right": { "label": "Polish", "focus": -5, "energy": -15, "money": -2, "mrr": 50, "days": 10 } },
+            { "id": "c8", "character": "THE CODE", "weight": 0.5, "prompt": "Tech debt is slowing you down. Rewrite?", "left": { "label": "Rewrite", "focus": 25, "energy": -20, "money": 0, "mrr": 0, "days": 14 }, "right": { "label": "Patch", "focus": -15, "energy": -5, "money": 0, "mrr": 0, "days": 2 } },
+            { "id": "c13", "character": "THE GROWER", "weight": 0.4, "prompt": "Launch on Product Hunt today?", "left": { "label": "Launch", "focus": -15, "energy": -25, "money": -5, "mrr": 1200, "days": 2 }, "right": { "label": "Wait", "focus": 5, "energy": 5, "money": 0, "mrr": -100, "days": 1 } },
+            { "id": "c19", "character": "THE CLOUD", "weight": 0.4, "prompt": "AWS bill tripled. Spend 5 days optimizing?", "left": { "label": "Optimize", "focus": 10, "energy": -10, "money": 0, "mrr": 0, "days": 5 }, "right": { "label": "Pay", "focus": 0, "energy": 0, "money": -10, "mrr": 0, "days": 1 } },
+            { "id": "c22", "character": "THE BODY", "weight": 0.4, "prompt": "You have a fever. Work or Sleep?", "left": { "label": "Work", "focus": -20, "energy": -40, "money": 0, "mrr": 100, "days": 1 }, "right": { "label": "Sleep", "focus": 5, "energy": 25, "money": 0, "mrr": 0, "days": 2 } },
+            { "id": "c27", "character": "THE OUTAGE", "weight": 0.4, "prompt": "Servers are down. It's 3 AM.", "left": { "label": "Fix Now", "focus": -5, "energy": -25, "money": 0, "mrr": -50, "days": 1 }, "right": { "label": "Sleep", "focus": -15, "energy": 10, "money": 0, "mrr": -300, "days": 1 } },
+            { "id": "c30", "character": "THE BURN", "weight": 0.3, "prompt": "You feel completely empty today. Stare at the screen?", "left": { "label": "Force It", "focus": -20, "energy": -15, "money": 0, "mrr": 50, "days": 3 }, "right": { "label": "Walk Away", "focus": 15, "energy": 20, "money": 0, "mrr": 0, "days": 1 } },
+            { "id": "c40", "character": "THE AI", "weight": 0.5, "prompt": "Investors only care about AI. Add an AI wrapper feature?", "left": { "label": "Grift", "focus": -20, "energy": -15, "money": -1, "mrr": 1000, "days": 10 }, "right": { "label": "Stay Pure", "focus": 10, "energy": 5, "money": 0, "mrr": 100, "days": 0 } }
+        ];
+
+        // --- GAME LOGIC ---
+        const TOTAL_WEEKS = 48; 
+        const PRODUCT_NAME_IDEAS = ["FocusFlow", "SaaSly", "HyperGrowth", "LeanStack", "Solopreneur.ai", "Nexus", "Draft", "Pulse", "ShipFast", "Burner", "Vault", "Beacon", "Zenith", "Koda", "Mojo", "Quill", "Vector", "Orbit"];
+
+        const INITIAL_STATE = {
+            productName: '',
+            namingPhase: false,
+            focus: 100, energy: 80, money: 50, daysElapsed: 0, mrr: 0,
+            isGameOver: false, gameOverReason: '', history: [], 
+            perks: { buyBackTime: false, deepWork: false, leverage: false }
+        };
+
+        const StatIcon = ({ icon: Icon, fill, animate, colorClass, label, description, onShowTooltip }) => (
+            <button onClick={() => onShowTooltip({ label, description })} className="flex flex-col items-center gap-1 group outline-none">
+                <Icon size={24} className={`transition-all duration-300 ${animate ? 'scale-125' : 'group-hover:scale-110'} ${colorClass}`} />
+                <span className="text-xs font-bold">{fill}</span>
+            </button>
+        );
+
+        function App() {
+            const [game, setGame] = useState(INITIAL_STATE);
+            const [currentCard, setCurrentCard] = useState(null);
+            const [animatingStat, setAnimatingStat] = useState(false);
+            const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+            const [isDragging, setIsDragging] = useState(false);
+            const [dragStart, setDragStart] = useState(null);
+            const [exitDir, setExitDir] = useState(null);
+            const [tooltip, setTooltip] = useState(null);
+            const [tempName, setTempName] = useState("");
+
+            const threshold = 120;
+            const metabolicState = game.energy < 25 ? 'Lethargy' : 'Focus';
+
+            const pickNewCard = useCallback((forcedId = null, updatedHistory = game.history) => {
+                setExitDir(null);
+                setDragOffset({ x: 0, y: 0 });
+                
+                if (forcedId) {
+                    setCurrentCard(CARD_DATABASE.find(c => c.id === forcedId));
+                    return;
+                }
+
+                let eligible = CARD_DATABASE.filter(c => {
+                    if (c.id === "intro" || c.id === "c1") return false;
+                    if (updatedHistory.includes(c.id)) return false;
+                    if (c.requirePerk && !game.perks[c.requirePerk]) return false;
+                    if (c.minDay && game.daysElapsed < c.minDay) return false;
+                    return true;
+                });
+
+                if (eligible.length === 0) {
+                    updatedHistory = [];
+                    eligible = CARD_DATABASE.filter(c => c.id !== "intro" && c.id !== "c1");
+                }
+
+                const totalWeight = eligible.reduce((acc, c) => acc + (c.weight || 1), 0);
+                let random = Math.random() * totalWeight;
+                for (const card of eligible) {
+                    if (random < (card.weight || 1)) {
+                        setCurrentCard(card);
+                        setGame(prev => ({ ...prev, history: [...updatedHistory, card.id] }));
+                        break;
+                    }
+                    random -= (card.weight || 1);
+                }
+            }, [game.history, game.perks, game.daysElapsed]);
+
+            useEffect(() => { pickNewCard("intro"); }, [pickNewCard]);
+
+            const shuffleName = () => {
+                const random = PRODUCT_NAME_IDEAS[Math.floor(Math.random() * PRODUCT_NAME_IDEAS.length)];
+                setTempName(random);
+            };
+
+            const handleDecision = (direction) => {
+                const effect = direction === 'left' ? currentCard.left : currentCard.right;
+                setExitDir(direction);
+                setAnimatingStat(true);
+                setTimeout(() => setAnimatingStat(false), 500);
+
+                const isIntro = currentCard.id === "intro";
+
+                setTimeout(() => {
+                    if (isIntro) {
+                        setGame(prev => ({ ...prev, namingPhase: true }));
+                        return;
+                    }
+
+                    setGame(prev => {
+                        const nextPerks = { ...prev.perks };
+                        if (effect.perk) nextPerks[effect.perk] = true;
+
+                        let timeMultiplier = metabolicState === 'Lethargy' ? 2.0 : 1.0;
+                        const nextState = {
+                            ...prev,
+                            perks: nextPerks,
+                            daysElapsed: prev.daysElapsed + Math.ceil(effect.days * timeMultiplier),
+                            focus: Math.min(100, Math.max(0, prev.focus + effect.focus)),
+                            energy: Math.min(100, Math.max(0, prev.energy + effect.energy)),
+                            money: Math.max(0, prev.money + effect.money),
+                            mrr: prev.mrr + (nextPerks.leverage ? Math.ceil(effect.mrr * 1.2) : effect.mrr),
+                        };
+
+                        if (Math.floor(nextState.daysElapsed / 7) >= TOTAL_WEEKS) return { ...nextState, isGameOver: true, gameOverReason: "Runway ended. The year is up." };
+                        if (nextState.energy <= 0) return { ...nextState, isGameOver: true, gameOverReason: "Health collapsed." };
+                        if (nextState.money <= 0) return { ...nextState, isGameOver: true, gameOverReason: "Bankrupt." };
+                        if (nextState.mrr >= 10000) return { ...nextState, isGameOver: true, gameOverReason: "Success! $10k MRR reached." };
+
+                        return nextState;
+                    });
+                    pickNewCard();
+                }, 400);
+            };
+
+            const onStart = (e) => {
+                if (game.isGameOver || game.namingPhase) return;
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                setDragStart({ x: clientX, y: clientY });
+                setIsDragging(true);
+            };
+
+            const onMove = (e) => {
+                if (!isDragging || !dragStart) return;
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                setDragOffset({ x: clientX - dragStart.x, y: clientY - dragStart.y });
+            };
+
+            const onEnd = () => {
+                if (!isDragging) return;
+                setIsDragging(false);
+                if (dragOffset.x > threshold) handleDecision('right');
+                else if (dragOffset.x < -threshold) handleDecision('left');
+                else setDragOffset({ x: 0, y: 0 });
+                setDragStart(null);
+            };
+
+            const confirmName = () => {
+                if (!tempName.trim()) return;
+                setGame(prev => ({ ...prev, productName: tempName, namingPhase: false }));
+                pickNewCard("c1");
+            };
+
+            const currentWeek = Math.floor(game.daysElapsed / 7);
+
+            return (
+                <div className="min-h-screen flex flex-col" onMouseMove={onMove} onMouseUp={onEnd} onMouseLeave={onEnd} onTouchMove={onMove} onTouchEnd={onEnd}>
+                    {tooltip && (
+                        <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/20 backdrop-blur-sm" onClick={() => setTooltip(null)}>
+                            <div className="bg-white border-2 border-[#1A1A1A] p-6 max-w-xs shadow-[8px_8px_0px_0px_rgba(26,26,26,1)]" onClick={e => e.stopPropagation()}>
+                                <h3 className="font-bold text-sm uppercase tracking-widest mb-2 flex items-center gap-2">
+                                    <IconInfo size={14} /> {tooltip.label}
+                                </h3>
+                                <p className="text-xs leading-relaxed opacity-70">{tooltip.description}</p>
+                                <button onClick={() => setTooltip(null)} className="mt-4 text-[10px] font-bold uppercase underline">Close</button>
+                            </div>
+                        </div>
+                    )}
+
+                    <header className="relative z-20 p-6 max-w-2xl mx-auto w-full flex flex-col items-center">
+                        <div className="flex gap-1 mb-2">
+                            {[...Array(12)].map((_, i) => (
+                                <div key={i} className={`w-4 h-4 rounded-sm border transition-all duration-700 ${Math.floor(currentWeek / 4) > i ? 'bg-[#1A1A1A] border-[#1A1A1A]' : Math.floor(currentWeek / 4) === i ? 'bg-[#00A86B] border-[#00A86B]' : 'bg-white/50 border-[#1A1A1A]/10'}`} />
+                            ))}
+                        </div>
+                        <div className="text-[10px] tracking-[0.4em] uppercase font-bold text-[#1A1A1A]/40 mb-1 text-center">
+                            {game.productName ? `${game.productName} // ` : ''} Month {Math.min(12, Math.floor(currentWeek / 4) + 1)}
+                        </div>
+                    </header>
+
+                    <div className="relative z-20 px-8 py-4 flex justify-between items-center max-w-md mx-auto w-full border-y-2 border-[#1A1A1A] bg-white/40">
+                        <StatIcon icon={IconClock} fill={`${game.focus}%`} animate={animatingStat} colorClass="text-[#1A1A1A]" label="Focus" description="Mental clarity. Low focus increases time costs." onShowTooltip={setTooltip} />
+                        <StatIcon icon={IconCoffee} fill={`${game.energy}%`} animate={animatingStat} colorClass={metabolicState === 'Lethargy' ? 'text-amber-700' : 'text-[#00A86B]'} label="Energy" description="Physical stamina. Below 25% you suffer 'Lethargy' (2x time cost)." onShowTooltip={setTooltip} />
+                        <StatIcon icon={IconDollar} fill={`$${game.money}k`} animate={animatingStat} colorClass="text-[#1A1A1A]" label="Cash" description="Your personal runway." onShowTooltip={setTooltip} />
+                    </div>
+
+                    <main className="flex-1 flex flex-col items-center justify-center p-6 relative">
+                        {game.isGameOver ? (
+                            <div className="max-w-md w-full bg-white border-4 border-[#1A1A1A] p-10 text-center shadow-[16px_16px_0px_0px_rgba(26,26,26,1)]">
+                                <div className="flex justify-center mb-4 text-[#00A86B]"><IconTrophy size={40} /></div>
+                                <h2 className="text-2xl font-serif font-black mb-2 uppercase tracking-widest">Year Review</h2>
+                                <p className="mb-6 font-serif italic text-lg opacity-80">"{game.gameOverReason}"</p>
+                                <button onClick={() => { setGame(INITIAL_STATE); setTempName(""); pickNewCard("intro", []); }} className="w-full py-4 bg-[#1A1A1A] text-white font-bold flex items-center justify-center gap-3 active:scale-95"><IconRotate size={16} /> REBOOT</button>
+                            </div>
+                        ) : game.namingPhase ? (
+                            <div className="max-w-md w-full bg-white border-4 border-[#1A1A1A] p-10 shadow-[12px_12px_0px_0px_rgba(26,26,26,1)]">
+                                <h2 className="text-xs font-bold uppercase tracking-widest opacity-40 mb-6">Step 2: Manifest Your Reality</h2>
+                                <div className="space-y-4">
+                                    <div className="relative">
+                                        <input 
+                                            type="text" 
+                                            value={tempName}
+                                            onChange={(e) => setTempName(e.target.value)}
+                                            placeholder="The Project Name..."
+                                            className="w-full bg-transparent border-b-2 border-[#1A1A1A] p-2 text-2xl font-serif italic focus:outline-none placeholder:opacity-20"
+                                        />
+                                        <button onClick={shuffleName} className="absolute right-2 top-3 text-[#1A1A1A]/40 hover:text-[#00A86B] transition-colors"><IconRefresh size={20} /></button>
+                                    </div>
+                                    <p className="text-[10px] opacity-40 leading-relaxed uppercase">The name doesn't matter, until it does. Pick something that makes you want to work.</p>
+                                    <button 
+                                        onClick={confirmName}
+                                        disabled={!tempName.trim()}
+                                        className="w-full py-4 bg-[#1A1A1A] text-white font-bold flex items-center justify-center gap-2 disabled:opacity-20 transition-opacity uppercase tracking-widest"
+                                    >
+                                        Establish {tempName || 'Startup'} <IconChevron size={16} />
+                                    </button>
+                                </div>
+                            </div>
+                        ) : (
+                            <>
+                                <div className="mb-6 text-center">
+                                    <div className="text-4xl font-serif font-black tracking-tighter">${game.mrr.toLocaleString()} <span className="text-sm opacity-30 font-mono">MRR</span></div>
+                                    <div className="flex gap-2 justify-center mt-2">
+                                        {Object.entries(game.perks).map(([key, active]) => active && (
+                                            <div key={key} className="bg-[#1A1A1A] text-white text-[7px] px-2 py-0.5 rounded-full uppercase tracking-widest flex items-center gap-1"><IconSparkles size={8} /> {key}</div>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                <div className="relative w-full max-w-sm h-[400px] perspective-1000">
+                                    <div className="absolute inset-0 flex justify-between px-6 items-center pointer-events-none z-30 font-bold">
+                                        <div style={{ opacity: Math.max(0, -dragOffset.x / threshold) }} className="bg-white border-2 border-[#1A1A1A] p-2 rotate-[-5deg] text-xs uppercase">{currentCard?.left.label}</div>
+                                        <div style={{ opacity: Math.max(0, dragOffset.x / threshold) }} className="bg-white border-2 border-[#1A1A1A] p-2 rotate-[5deg] text-xs uppercase">{currentCard?.right.label}</div>
+                                    </div>
+
+                                    {currentCard && (
+                                        <div 
+                                            onMouseDown={onStart} onTouchStart={onStart}
+                                            style={{ transform: exitDir ? `translateX(${exitDir === 'left' ? '-150%' : '150%'}) rotate(${exitDir === 'left' ? '-20deg' : '20deg'})` : `translate(${dragOffset.x}px, ${dragOffset.y}px) rotate(${dragOffset.x / 15}deg)`, transition: isDragging ? 'none' : 'all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)' }}
+                                            className={`bg-white border-2 border-[#1A1A1A] rounded-sm p-10 flex flex-col items-center justify-between h-full w-full absolute inset-0 shadow-[8px_8px_0px_0px_rgba(26,26,26,0.1)] cursor-grab active:cursor-grabbing ${metabolicState === 'Lethargy' ? 'sepia-[0.2]' : ''}`}
+                                        >
+                                            <div className="flex flex-col items-center pointer-events-none">
+                                                <div className={`w-12 h-12 rounded-full border border-[#1A1A1A] flex items-center justify-center mb-2 ${currentCard.character.includes('REFLECT') || currentCard.character.includes('OBSERVER') ? 'bg-[#00A86B] text-white' : ''}`}>
+                                                    {currentCard.character.includes('REFLECT') ? <IconBook size={20} /> : <IconUser size={20} />}
+                                                </div>
+                                                <span className="text-[9px] font-bold tracking-[0.4em] uppercase opacity-40">{currentCard.character}</span>
+                                            </div>
+                                            <p className={`text-center font-bold leading-tight ${currentCard.character === 'THE OBSERVER' ? 'text-xl italic font-serif' : 'text-2xl font-serif'}`}>"{currentCard.prompt}"</p>
+                                            <div className="text-[9px] font-bold uppercase tracking-widest flex flex-col items-center gap-1 opacity-20">
+                                                <span>Swipe Left or Right</span>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            </>
+                        )}
+                    </main>
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
