@@ -4,551 +4,274 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Solo Founder Simulator</title>
-  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,400;0,700;0,900;1,400&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-    html, body { margin: 0; padding: 0; background: #EDEBE3; }
+    html, body { margin: 0; padding: 0; background: #EDEBE3; min-height: 100%; }
     body { font-family: system-ui, sans-serif; }
     .serif { font-family: 'Crimson Pro', Georgia, serif; }
-
-    .sfs { background: #EDEBE3; user-select: none; touch-action: none; min-height: 100dvh; display: flex; flex-direction: column; }
-
-    @keyframes sfs-danger-card {
-      0%,100% { box-shadow: 0 4px 20px rgba(220,38,38,0.15), 5px 5px 0 0 rgba(220,38,38,0.3); }
-      50%      { box-shadow: 0 4px 28px rgba(220,38,38,0.4),  5px 5px 0 0 rgba(220,38,38,0.65); }
-    }
-    .sfs-card-danger { animation: sfs-danger-card 1.1s ease-in-out infinite; border-color: #DC2626 !important; }
-
-    @keyframes sfs-float {
-      0%,100% { transform: translateY(0); }
-      50%      { transform: translateY(-7px); }
-    }
-    .sfs-float { animation: sfs-float 3.2s ease-in-out infinite; }
-
-    @keyframes sfs-pulse {
-      0%,100% { opacity: 1; }
-      50%      { opacity: 0.2; }
-    }
-    .sfs-pulse { animation: sfs-pulse 0.85s ease-in-out infinite; }
-
-    @keyframes sfs-shake {
-      0%,100% { transform: translateX(0); }
-      20%,60% { transform: translateX(-4px); }
-      40%,80% { transform: translateX(4px); }
-    }
-    .sfs-shake { animation: sfs-shake 0.35s ease-in-out; }
-
-    @keyframes sfs-din {
-      from { opacity: 0; transform: translateY(4px) scale(0.9); }
-      to   { opacity: 1; transform: none; }
-    }
-    .sfs-din { animation: sfs-din 0.15s ease-out forwards; }
+    #root { min-height: 100dvh; display: flex; flex-direction: column; background: #EDEBE3; user-select: none; }
+    .shell { flex: 1; display: flex; flex-direction: column; width: 100%; max-width: 560px; margin: 0 auto; padding: 0 20px; }
+    @keyframes dp { 0%,100%{box-shadow:0 4px 20px rgba(220,38,38,.15),5px 5px 0 0 rgba(220,38,38,.3);border-color:#DC2626} 50%{box-shadow:0 4px 28px rgba(220,38,38,.4),5px 5px 0 0 rgba(220,38,38,.65);border-color:#DC2626} }
+    @keyframes fl { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-7px)} }
+    @keyframes sp { 0%,100%{opacity:1} 50%{opacity:.2} }
+    @keyframes sk { 0%,100%{transform:translateX(0)} 20%,60%{transform:translateX(-4px)} 40%,80%{transform:translateX(4px)} }
+    @keyframes bi { from{opacity:0;transform:translateY(4px) scale(.9)} to{opacity:1;transform:none} }
+    @keyframes si { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:none} }
+    .cfl { animation: fl 3.2s ease-in-out infinite; }
+    .cdp { animation: dp 1.1s ease-in-out infinite; }
+    .spl { animation: sp .85s ease-in-out infinite; }
+    .shk { animation: sk .35s ease-in-out; }
+    .bdi { animation: bi .15s ease-out forwards; }
+    .sti { animation: si .4s ease-out forwards; }
+    .sc  { touch-action: none; cursor: grab; }
+    .sc:active { cursor: grabbing; }
   </style>
 </head>
 <body>
-  <div id="root"></div>
+<div id="root"></div>
+<script>
+// ── DATA ─────────────────────────────────────────────────────────────────────
+const NP=["Disrupt","Synerg","Hyper","Turbo","Mega","Blitz","Hustle","Pivotly","Scalr","Grind","Vibe","Hack","Quantum","Lean","No-Code","Chad","Biz","Cringe"];
+const NS=["ify",".io","ly","hub","DAO","GPT","OS","XL","Pro","360","Bot","AI","Bro","Token","Ninja","Wizard","Unicorn","SaaS"];
+const NM=[" 2.0"," For Cats"," But Better"," On Blockchain"," With AI"," Enterprise"," Premium"," For Founders"," At Scale"," (Pivot Edition)","\u2014 Now With ChatGPT"," For Dogs Too"];
+const CARDS=[
+  {id:"intro",ch:"THE OBSERVER",q:"You\u2019ve been talking about this for years. The spreadsheets are done. The \u2018safe\u2019 path is rotting. You\u2019re standing at the edge. Jump?",L:{label:"Jump",focus:0,energy:0,money:0,mrr:0,days:0,next:"naming"},R:{label:"Jump",focus:0,energy:0,money:0,mrr:0,days:0,next:"naming"}},
+  {id:"S01",ch:"THE LEAP",w:.9,q:"You just submitted your resignation. Your hands are shaking. What do you do with the next 4 hours?",L:{label:"Write the landing page",focus:10,energy:-5,money:0,mrr:0,days:1},R:{label:"Watch TV and breathe",focus:20,energy:20,money:0,mrr:0,days:1}},
+  {id:"S02",ch:"THE MIRROR",w:.7,q:"Day 3. No commute. No meetings. Just silence and a blinking cursor. Who are you without the job title?",L:{label:"Build something \u2014 anything",focus:-10,energy:-15,money:0,mrr:0,days:2},R:{label:"Sit with it",focus:15,energy:5,money:0,mrr:0,days:2}},
+  {id:"S03",ch:"THE EX-BOSS",w:.5,q:"Your old manager just texted. \u2018We miss you. The role is still open.\u2019 You have savings.",L:{label:"Ignore it",focus:5,energy:0,money:0,mrr:0,days:0},R:{label:"Meet for coffee",focus:-15,energy:-10,money:0,mrr:-200,days:2}},
+  {id:"S04",ch:"THE VOID",w:.6,q:"Three weeks of building. Zero users. Someone on Twitter just shipped the exact same idea.",L:{label:"Differentiate \u2014 keep going",focus:-15,energy:-10,money:0,mrr:0,days:3},R:{label:"Pivot hard",focus:-20,energy:-20,money:0,mrr:0,days:7}},
+  {id:"S05",ch:"THE FIRST USER",w:.6,q:"Someone signed up. They haven\u2019t paid. They want a 30-minute call to \u2018give feedback.\u2019",L:{label:"Take the call",focus:5,energy:-10,money:0,mrr:50,days:1},R:{label:"Email them instead",focus:5,energy:0,money:0,mrr:20,days:1}},
+  {id:"S06",ch:"THE INNER VOICE",w:.7,q:"It\u2019s 11pm. You\u2019ve been at this for 14 hours. The landing page still isn\u2019t done. You feel nothing.",L:{label:"Push through",focus:-20,energy:-25,money:0,mrr:0,days:1},R:{label:"Sleep",focus:10,energy:20,money:0,mrr:0,days:1}},
+  {id:"S07",ch:"THE FRIEND",w:.5,q:"Your best friend says: \u2018Just get a remote job and do this on the side. What\u2019s the rush?\u2019",L:{label:"They\u2019re right \u2014 explore",focus:-10,energy:10,money:20,mrr:0,days:5},R:{label:"Nod and move on",focus:10,energy:0,money:0,mrr:0,days:0}},
+  {id:"S08",ch:"THE PRODUCT",w:.8,q:"Version 1 is ready. It\u2019s ugly. It works. Do you ship?",L:{label:"Ship it today",focus:5,energy:-5,money:0,mrr:200,days:1},R:{label:"One more week of polish",focus:-10,energy:-15,money:0,mrr:50,days:7}},
+  {id:"S09",ch:"THE BODY",w:.6,q:"I\u2019m exhausted. Not tired \u2014 exhausted. You haven\u2019t moved in 6 hours.",L:{label:"Run. Right now.",focus:15,energy:25,money:0,mrr:0,days:1},R:{label:"Five more minutes on this bug",focus:-10,energy:-15,money:0,mrr:0,days:1}},
+  {id:"alex1",ch:"ALEX",w:0,alexCheckpoint:1,q:"",L:{label:"Jump on a call",focus:-5,energy:-10,money:0,mrr:150,days:1},R:{label:"Send a welcome email",focus:0,energy:-5,money:0,mrr:50,days:0}},
+  {id:"S11",ch:"THE FIRST DOLLAR",w:.7,q:"Someone just paid. $49. A stranger. You have no idea why they chose you.",L:{label:"Email them immediately",focus:5,energy:-5,money:0,mrr:49,days:1},R:{label:"Build the next feature first",focus:-5,energy:-5,money:0,mrr:0,days:3}},
+  {id:"S12",ch:"THE ANGRY USER",w:.6,q:"A user just posted publicly: \u2018This product is half-baked garbage.\u2019 200 people saw it.",L:{label:"Reply publicly \u2014 own it",focus:-5,energy:-15,money:0,mrr:150,days:1},R:{label:"DM them quietly",focus:-5,energy:-5,money:0,mrr:50,days:1}},
+  {id:"S13",ch:"THE NUMBERS",w:.5,q:"Churn hit 18% last month. No idea why. Investigate or keep building?",L:{label:"Investigate the churn",focus:10,energy:-15,money:0,mrr:300,days:7,perk:"churnAnalysis"},R:{label:"Keep building \u2014 acquire faster",focus:-5,energy:-5,money:0,mrr:100,days:3}},
+  {id:"S14",ch:"THE OFFER",w:.4,q:"A startup wants to hire you as Head of Product. $180k. Remote. Full equity cliff.",L:{label:"Decline",focus:15,energy:5,money:0,mrr:100,days:0},R:{label:"Ask for a meeting \u2014 just curious",focus:-20,energy:-10,money:20,mrr:-200,days:3}},
+  {id:"S15",ch:"THE TWEET",w:.5,q:"You wrote a thread about what you\u2019ve learned. It\u2019s getting traction. A journalist DMs you.",L:{label:"Talk to them",focus:-5,energy:-10,money:0,mrr:400,days:2},R:{label:"Stay quiet \u2014 focus on product",focus:10,energy:5,money:0,mrr:50,days:0}},
+  {id:"bank1",ch:"THE BANK STATEMENT",w:0,bankStatement:true,L:{label:"Keep going",focus:0,energy:0,money:0,mrr:0,days:0},R:{label:"Keep going",focus:0,energy:0,money:0,mrr:0,days:0}},
+  {id:"alex2",ch:"ALEX",w:0,alexCheckpoint:2,q:"",L:{label:"Get on a call",focus:-5,energy:-10,money:0,mrr:200,days:1},R:{label:"Reply with an update",focus:0,energy:-5,money:0,mrr:80,days:0}},
+  {id:"S17",ch:"THE COLLABORATOR",w:.5,q:"Another founder wants to co-build a feature. 50/50 split on any revenue.",L:{label:"Build together",focus:-5,energy:-5,money:0,mrr:250,days:5},R:{label:"Stay focused solo",focus:10,energy:5,money:0,mrr:50,days:0}},
+  {id:"S18",ch:"THE BODY",w:.5,q:"I told you weeks ago. Now I\u2019m telling you again: we are not okay.",L:{label:"Two full days off",focus:20,energy:40,money:0,mrr:0,days:2},R:{label:"Just this week \u2014 then rest",focus:-15,energy:-20,money:0,mrr:100,days:3}},
+  {id:"S19",ch:"THE LAUNCH",w:.4,q:"Product Hunt wants to feature you tomorrow. You found out tonight.",L:{label:"Go for it",focus:-15,energy:-30,money:-2,mrr:800,days:1},R:{label:"Ask to reschedule",focus:0,energy:0,money:0,mrr:100,days:3}},
+  {id:"S20",ch:"THE ACCOUNTANT",w:.4,q:"Your tax filing is three months late. The fine is growing.",L:{label:"Block a day, fix it",focus:0,energy:-10,money:-3,mrr:0,days:1},R:{label:"Hire someone to handle it",focus:5,energy:0,money:-8,mrr:0,days:0}},
+  {id:"S21",ch:"THE CHASM",w:.5,min:60,q:"Every new user needs the same manual onboarding call. Build self-serve or keep doing calls?",L:{label:"Build self-serve onboarding",focus:-10,energy:-20,money:-5,mrr:600,days:14},R:{label:"Keep doing calls \u2014 it\u2019s working",focus:0,energy:-10,money:0,mrr:200,days:7}},
+  {id:"S22",ch:"THE INNER VOICE",w:.5,minMrr:2000,qFn:g=>`You\u2019re at $${g.mrr.toLocaleString()} MRR. You thought you\u2019d feel something by now.`,q:"",L:{label:"That\u2019s the wrong metric \u2014 reframe",focus:15,energy:10,money:0,mrr:100,days:0},R:{label:"Maybe this was a mistake",focus:-25,energy:-15,money:0,mrr:-200,days:2}},
+  {id:"alex3",ch:"ALEX",w:0,alexCheckpoint:3,q:"",L:{label:"Start the team plan conversation",focus:-5,energy:-10,money:0,mrr:500,days:2},R:{label:"Thank them, stay focused",focus:5,energy:0,money:0,mrr:100,days:0}},
+  {id:"S24",ch:"THE OLD PLAYBOOK",w:.6,min:120,q:"Nothing is working the way it used to. The tactics that got you to $3k MRR won\u2019t get you to $10k.",L:{label:"Do more of what worked",focus:-10,energy:-15,money:0,mrr:100,days:7},R:{label:"Stop. Think differently.",focus:20,energy:-5,money:0,mrr:0,days:3}},
+  {id:"S25",ch:"THE COMPETITOR",w:.5,q:"A well-funded competitor just launched. Same space. $4M seed. Their landing page is better than yours.",L:{label:"Ignore them \u2014 serve your users",focus:10,energy:0,money:0,mrr:300,days:0},R:{label:"Obsess over their roadmap",focus:-25,energy:-15,money:0,mrr:-100,days:5}},
+  {id:"S26",ch:"THE FAMILY",w:.4,q:"Your partner sat down with you last night. They didn\u2019t complain. They just asked: \u2018Are you happy?\u2019",L:{label:"\u2018Yes. This is it.\u2019",focus:20,energy:15,money:0,mrr:100,days:0},R:{label:"\u2018I don\u2019t know anymore.\u2019",focus:-10,energy:20,money:0,mrr:-150,days:1}},
+  {id:"S27",ch:"THE SHORTCUT",w:.4,q:"Someone\u2019s offering 400 email leads in your niche. $300. Probably legal. Probably not ethical.",L:{label:"Buy the list",focus:-10,energy:0,money:-3,mrr:200,days:2},R:{label:"Pass",focus:5,energy:5,money:0,mrr:50,days:0}},
+  {id:"S28",ch:"THE NUMBERS",w:.5,min:150,minMrr:6000,qFn:g=>`$${g.mrr.toLocaleString()} MRR. If nothing changes you hit $10k in weeks. If one thing goes wrong, you don\u2019t.`,q:"",L:{label:"Accelerate \u2014 push hard",focus:-15,energy:-25,money:-5,mrr:800,days:7},R:{label:"Protect what you have",focus:5,energy:5,money:0,mrr:300,days:7}},
+  {id:"S29",ch:"THE BODY",w:.4,q:"I\u2019ve been quiet for a while. I was waiting for you to notice. You haven\u2019t noticed.",L:{label:"I hear you. We stop.",focus:15,energy:35,money:0,mrr:-200,days:3},R:{label:"Almost there. Just hold on.",focus:-20,energy:-30,money:0,mrr:200,days:3}},
+  {id:"alex4",ch:"ALEX",w:0,alexCheckpoint:4,q:"",L:{label:"Set up the call \u2014 let\u2019s talk",focus:-5,energy:-10,money:0,mrr:800,days:2},R:{label:"Send pricing info first",focus:0,energy:-5,money:0,mrr:300,days:1}},
+  {id:"c7",ch:"THE USER",w:.6,q:"Product is buggy. Ship now or polish?",L:{label:"Ship It",focus:-10,energy:-5,money:0,mrr:150,days:3},R:{label:"Polish",focus:-5,energy:-15,money:-2,mrr:50,days:10}},
+  {id:"c8",ch:"THE CODE",w:.6,q:"Tech debt is slowing you down. Rewrite or patch?",L:{label:"Rewrite",focus:25,energy:-20,money:0,mrr:0,days:14},R:{label:"Patch",focus:-15,energy:-5,money:0,mrr:0,days:2}},
+  {id:"c19",ch:"THE CLOUD",w:.4,q:"AWS bill tripled. Optimize now or just pay it?",L:{label:"Optimize",focus:10,energy:-10,money:0,mrr:0,days:5},R:{label:"Pay",focus:0,energy:0,money:-10,mrr:0,days:1}},
+  {id:"c22",ch:"THE BODY",w:.5,q:"You have a fever. Work or sleep?",L:{label:"Work",focus:-20,energy:-40,money:0,mrr:100,days:1},R:{label:"Sleep",focus:5,energy:25,money:0,mrr:0,days:2}},
+  {id:"c27",ch:"THE OUTAGE",w:.4,q:"Servers are down. It\u2019s 3 AM.",L:{label:"Fix Now",focus:-5,energy:-25,money:0,mrr:-50,days:1},R:{label:"Sleep",focus:-15,energy:10,money:0,mrr:-300,days:1}},
+  {id:"c30",ch:"THE BURN",w:.3,q:"You feel completely empty today. Force it?",L:{label:"Force It",focus:-20,energy:-15,money:0,mrr:50,days:3},R:{label:"Walk Away",focus:15,energy:20,money:0,mrr:0,days:1}},
+  {id:"c40",ch:"THE AI",w:.5,q:"Investors only care about AI now. Add an AI wrapper?",L:{label:"Grift",focus:-20,energy:-15,money:-1,mrr:1000,days:10},R:{label:"Stay Pure",focus:10,energy:5,money:0,mrr:100,days:0}},
+  {id:"c2",ch:"READ & REFLECT",w:.1,min:30,q:"Read \u2018Buy Back Your Time\u2019 by Dan Martell?",L:{label:"Study",focus:15,energy:20,money:-5,mrr:0,days:3,perk:"buyBackTime"},R:{label:"Ignore",focus:-5,energy:-5,money:0,mrr:50,days:5}},
+  {id:"c3",ch:"READ & REFLECT",w:.1,min:60,q:"Study Naval\u2019s Almanack for leverage?",L:{label:"Seek",focus:5,energy:5,money:0,mrr:800,days:4,perk:"leverage"},R:{label:"Ignore",focus:-10,energy:-5,money:0,mrr:200,days:6}},
+  {id:"c13",ch:"THE GROWER",w:.4,min:20,q:"Launch on Product Hunt today?",L:{label:"Launch",focus:-15,energy:-25,money:-5,mrr:1200,days:2},R:{label:"Wait",focus:5,energy:5,money:0,mrr:-100,days:1}},
+  // ── Memory cards (require specific prior choices) ──────────────────────────
+  {id:"M01",ch:"THE EX-BOSS",w:.8,requires:{S03:"right"},q:"Your old manager sent a follow-up. \u2018The offer expires Friday. Just say the word.\u2019",L:{label:"Delete it",focus:15,energy:5,money:0,mrr:100,days:0},R:{label:"Reply \u2018maybe soon\u2019",focus:-20,energy:-10,money:0,mrr:-150,days:2}},
+  {id:"M02",ch:"THE REVIEW",w:.8,requires:{S08:"left"},q:"That early launch got a public 1-star review. \u2018Barely works. Founder clearly doesn\u2019t care.\u2019 150 people saw it.",L:{label:"Reply and own it",focus:-5,energy:-10,money:0,mrr:200,days:1},R:{label:"Fix quietly, say nothing",focus:5,energy:-15,money:0,mrr:50,days:3}},
+  {id:"M03",ch:"THE DATA",w:.9,requires:{S13:"left"},q:"The churn data paid off. Users who finish setup in under 5 minutes stay 3x longer. You know exactly what to fix.",L:{label:"Build it now",focus:10,energy:-15,money:0,mrr:500,days:7},R:{label:"File it for later",focus:-5,energy:0,money:0,mrr:50,days:0}},
+  {id:"M04",ch:"THE BODY",w:.8,requires:{S09:"right"},q:"Your wrist has been aching for two weeks. You\u2019ve been ignoring it. Today you can\u2019t type without pain.",L:{label:"Stop. Rest. Doctor.",focus:10,energy:30,money:-2,mrr:0,days:3},R:{label:"Take ibuprofen, keep going",focus:-10,energy:-20,money:0,mrr:100,days:2}},
+  {id:"M05",ch:"THE MORNING AFTER",w:.8,requires:{S06:"left"},q:"You stayed up until 3am. The feature you pushed through last night\u2026 you need to delete all of it.",L:{label:"Delete it. Start fresh.",focus:15,energy:-10,money:0,mrr:0,days:2},R:{label:"Ship it anyway",focus:-15,energy:-10,money:0,mrr:50,days:1}},
+];
+const CHECKPOINTS=[{id:"alex1",triggerDay:85},{id:"bank1",triggerDay:175},{id:"alex2",triggerDay:175},{id:"alex3",triggerDay:265},{id:"alex4",triggerDay:355}];
 
-  <script type="text/babel">
-    const { useState, useEffect, useCallback, useRef } = React;
+// ── STATE ─────────────────────────────────────────────────────────────────────
+function freshGame(){return{productName:'',namingPhase:false,focus:100,energy:80,money:50,daysElapsed:0,mrr:0,isGameOver:false,gameOverReason:'',checkpointsFired:[],choices:{},perks:{buyBackTime:false,deepWork:false,leverage:false,churnAnalysis:false}};}
+let G=freshGame(),card=null,alexMsg=null,bankData=null,cardHist=[],tempName='',shakeSet=new Set();
+const T=110;
+let drag={on:false,sx:0,sy:0,x:0,y:0};
 
-    // ── SVG icon helper ───────────────────────────────────────────────────────
-    function Svg({ size, children, style, className }) {
-      return (
-        <svg width={size} height={size} style={style} className={className}
-          viewBox="0 0 24 24" fill="none" stroke="currentColor"
-          strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          {children}
-        </svg>
-      );
+// ── HELPERS ───────────────────────────────────────────────────────────────────
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+function funnyName(){return NP[~~(Math.random()*NP.length)]+(Math.random()>.45?NM[~~(Math.random()*NM.length)]:'')+NS[~~(Math.random()*NS.length)];}
+function focusLbl(v){if(v>=90)return'Flow';if(v>=70)return'Focus';if(v>=50)return'Grinding';if(v>=30)return'Foggy';if(v>=10)return'Scattered';return'Fried';}
+function alexMsg2(mrr,n){
+  if(n===1)return{s:"Quick question",b:"Hey. Signed up last week. Still figuring out if this is for me. Do you do onboarding calls?"};
+  if(n===2){if(mrr<500)return{s:"Still here",b:"Hey. Barely using it honestly. Feels half-built. Not complaining \u2014 just being honest."};if(mrr<2000)return{s:"Getting there",b:"Using it a couple times a week now. One thing that would really help me is..."};return{s:"Love this",b:"Recommended you to two people this week. When are you adding team accounts?"};}
+  if(n===3){if(mrr<2000)return{s:"...",b:"Haven\u2019t logged in for a while. Life got busy. Might come back when it\u2019s more developed."};if(mrr<5000)return{s:"Checking in",b:"Still using it every day. My team keeps asking about it. Any plans for a team plan?"};return{s:"Enterprise?",b:"My manager saw me using this. She wants to know if you do volume pricing. Like, for 40 seats."};}
+  if(n===4){if(mrr<3000)return{s:"Cancelling",b:"Hey \u2014 cancelling my sub. Budget stuff, not a product thing. Good luck with it."};if(mrr<7000)return{s:"Year 1",b:"Wild that I\u2019ve been using this for almost a year. Here\u2019s what I wish you\u2019d built sooner..."};return{s:"We should talk",b:"Our company wants to sign an annual contract. Can we get on a call this week?"};}
+  return{s:"Hey",b:"..."};
+}
+function delta(v,label){
+  if(!v)return'';
+  const pos=v>0,c=pos?'#15803d':'#b91c1c',bg=pos?'#f0fdf4':'#fff1f2',bc=pos?'#4ade80':'#f87171';
+  const t=label==='Cash'?`${pos?'+':''}$${v}k`:label==='MRR'?`${pos?'+':''}$${v}`:`${pos?'+':''}${v}%`;
+  return`<span class="bdi" style="display:inline-flex;align-items:center;gap:2px;font-size:9px;font-weight:700;padding:2px 7px;border-radius:2px;border:1px solid ${bc};background:${bg};color:${c}">${pos?'&#9650;':'&#9660;'} ${t}</span>`;
+}
+
+// ── SVG ICONS ─────────────────────────────────────────────────────────────────
+function brainIcon(pct){
+  const d=pct<=20,w=pct<=40&&pct>20,col=d?'#DC2626':w?'#D97706':'#1A1A1A';
+  const fy=24-(24*pct/100);
+  const p1="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96-.46 2.5 2.5 0 0 1-1.7-3.43 3 3 0 0 1 .34-5.58 2.5 2.5 0 0 1 1.32-4.24A2.5 2.5 0 0 1 9.5 2Z";
+  const p2="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96-.46 2.5 2.5 0 0 0 1.7-3.43 3 3 0 0 0-.34-5.58 2.5 2.5 0 0 0-1.32-4.24A2.5 2.5 0 0 0 14.5 2Z";
+  return`<div id="bi" class="${shakeSet.has('focus')?'shk':''}" style="display:flex;flex-direction:column;align-items:center;gap:6px;padding:4px 12px"><svg width="44" height="44" viewBox="0 0 24 24" overflow="visible"><defs><clipPath id="bfc"><rect x="0" y="${fy}" width="24" height="24"/></clipPath></defs><g opacity=".12" stroke="${col}" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="${p1}"/><path d="${p2}"/></g><g clip-path="url(#bfc)" stroke="${col}" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"${d?' class="spl"':''}><path d="${p1}"/><path d="${p2}"/></g></svg><span style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.12em;color:${col};line-height:1">${focusLbl(pct)}</span></div>`;
+}
+function coffeeIcon(pct){
+  const d=pct<=20,w=pct<=40&&pct>20,col=d?'#DC2626':w?'#D97706':'#92400e';
+  const ft=8+13*(1-pct/100),fh=Math.max(0,23-ft),so=.15+(pct/100)*.85;
+  return`<div id="ci" class="${shakeSet.has('energy')?'shk':''}" style="display:flex;flex-direction:column;align-items:center;gap:6px;padding:4px 12px"><svg width="44" height="44" viewBox="0 0 24 24" overflow="visible"><defs><clipPath id="cfc"><rect x="0" y="${ft}" width="24" height="${fh}"/></clipPath></defs><g opacity=".15" stroke="${col}" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M17 8h1a4 4 0 1 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"/><line x1="6" x2="6" y1="2" y2="4"/><line x1="10" x2="10" y1="2" y2="4"/><line x1="14" x2="14" y1="2" y2="4"/></g><g clip-path="url(#cfc)" stroke="${col}" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"${d?' class="spl"':''}><path d="M17 8h1a4 4 0 1 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"/></g><g stroke="${col}" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" opacity="${so}"><line x1="6" x2="6" y1="2" y2="4"/><line x1="10" x2="10" y1="2" y2="4"/><line x1="14" x2="14" y1="2" y2="4"/></g></svg><span style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.12em;color:${col};line-height:1">${pct}%</span></div>`;
+}
+function walletIcon(val){
+  const d=val<=10,w=val<=25&&val>10,col=d?'#DC2626':w?'#D97706':'#1A1A1A';
+  const fp=clamp((val/80)*100,0,100),fy=22-(19*fp/100),fh=Math.max(0,24-fy);
+  const p1="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1",p2="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4";
+  return`<div id="wi" class="${shakeSet.has('money')?'shk':''}" style="display:flex;flex-direction:column;align-items:center;gap:6px;padding:4px 12px"><svg width="44" height="44" viewBox="0 0 24 24" overflow="visible"><defs><clipPath id="wfc"><rect x="0" y="${fy}" width="24" height="${fh}"/></clipPath></defs><g opacity=".12" stroke="${col}" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="${p1}"/><path d="${p2}"/></g><g clip-path="url(#wfc)" stroke="${col}" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"${d?' class="spl"':''}><path d="${p1}"/><path d="${p2}"/></g></svg><span style="font-size:10px;font-weight:800;letter-spacing:.04em;color:${col};line-height:1">$${val}k</span></div>`;
+}
+const divider='<div style="width:1px;height:60px;background:rgba(26,26,26,.08);align-self:center"></div>';
+
+// ── PICK CARD ─────────────────────────────────────────────────────────────────
+function pickCard(fid){
+  drag={on:false,sx:0,sy:0,x:0,y:0};
+  alexMsg=null; bankData=null;
+  if(G.isGameOver){render();return;}
+  if(fid){const f=CARDS.find(c=>c.id===fid);if(f){card=f;if(fid!=='intro'&&!cardHist.includes(fid))cardHist.push(fid);render();return;}}
+  for(const cp of CHECKPOINTS){
+    if(G.checkpointsFired.includes(cp.id))continue;
+    if(G.daysElapsed>=cp.triggerDay){
+      G.checkpointsFired.push(cp.id);
+      const cc=CARDS.find(c=>c.id===cp.id);if(!cc)continue;
+      card=cc;
+      if(cc.bankStatement){const run=G.mrr>0?Math.min(99,Math.floor(G.money/(G.mrr/1000*.3))):99;bankData={money:G.money,mrr:G.mrr,runway:run,monthsLeft:Math.max(0,12-Math.floor(G.daysElapsed/30))};}
+      else if(cc.alexCheckpoint){alexMsg=alexMsg2(G.mrr,cc.alexCheckpoint);}
+      render();return;
     }
-    const ITrophy  = ({size,style}) => <Svg size={size} style={style}><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55-.47.98-.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></Svg>;
-    const ISpark   = ({size,style}) => <Svg size={size} style={style}><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></Svg>;
-    const IRefresh = ({size,style}) => <Svg size={size} style={style}><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></Svg>;
-    const IChevron = ({size,style}) => <Svg size={size} style={style}><path d="m9 18 6-6-6-6"/></Svg>;
-    const IRotate  = ({size,style}) => <Svg size={size} style={style}><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></Svg>;
+  }
+  const a1=new Set(["S01","S02","S03","S04","S05","S06","S07","S08","S09"]);
+  const passesMemory=c=>{
+    if(c.requires&&!Object.entries(c.requires).every(([id,d])=>G.choices[id]===d))return false;
+    if(c.excludeIf&&Object.entries(c.excludeIf).some(([id,d])=>G.choices[id]===d))return false;
+    return true;
+  };
+  const baseFilter=c=>c.id!=='intro'&&!c.alexCheckpoint&&!c.bankStatement&&(!c.min||G.daysElapsed>=c.min)&&(!c.minMrr||G.mrr>=c.minMrr)&&(!c.maxMrr||G.mrr<=c.maxMrr)&&!(a1.has(c.id)&&G.daysElapsed>100);
+  let pool=CARDS.filter(c=>baseFilter(c)&&!cardHist.includes(c.id)&&passesMemory(c));
+  if(!pool.length){cardHist=[];pool=CARDS.filter(c=>baseFilter(c)&&passesMemory(c));}
+  if(!pool.length){pool=CARDS.filter(c=>baseFilter(c));}// last resort: drop memory gates
+  if(!pool.length)return;
+  const tot=pool.reduce((a,c)=>a+(c.w||1),0);let r=Math.random()*tot;
+  for(const c of pool){if(r<(c.w||1)){card=c;cardHist.push(c.id);break;}r-=(c.w||1);}
+  render();
+}
 
-    // ── Focus labels ──────────────────────────────────────────────────────────
-    function focusLabel(v) {
-      if (v >= 90) return "Flow";
-      if (v >= 70) return "Focus";
-      if (v >= 50) return "Grinding";
-      if (v >= 30) return "Foggy";
-      if (v >= 10) return "Scattered";
-      return "Fried";
+// ── DECIDE ────────────────────────────────────────────────────────────────────
+function decide(dir){
+  if(!card||G.isGameOver||G.namingPhase)return;
+  const eff=dir==='left'?card.L:card.R;
+  const el=document.getElementById('sc');
+  if(el){el.style.transition='transform .42s ease-in-out';el.style.transform=`translateX(${dir==='left'?'-160%':'160%'}) rotate(${dir==='left'?'-18deg':'18deg'})`;el.className='sc';}
+  setTimeout(()=>{
+    if(eff.next==='naming'){G.namingPhase=true;card=null;render();return;}
+    const perks={...G.perks};if(eff.perk)perks[eff.perk]=true;
+    const tm=G.energy<25?2:1;
+    const nF=clamp(G.focus+(eff.focus||0),0,100),nE=clamp(G.energy+(eff.energy||0),0,100),nM=Math.max(0,G.money+(eff.money||0));
+    const mrrG=perks.leverage?Math.ceil((eff.mrr||0)*1.2):(eff.mrr||0);
+    const nMRR=Math.max(0,G.mrr+mrrG);
+    if(nF<=20&&G.focus>20){shakeSet.add('focus');setTimeout(()=>{shakeSet.delete('focus');},500);}
+    if(nE<=20&&G.energy>20){shakeSet.add('energy');setTimeout(()=>{shakeSet.delete('energy');},500);}
+    if(nM<=10&&G.money>10){shakeSet.add('money');setTimeout(()=>{shakeSet.delete('money');},500);}
+    G={...G,perks,choices:{...G.choices,[card.id]:dir},daysElapsed:G.daysElapsed+Math.ceil((eff.days||0)*tm),focus:nF,energy:nE,money:nM,mrr:nMRR};
+    if(nMRR>=10000)G={...G,isGameOver:true,gameOverReason:"$10k MRR. You made it."};
+    else if(Math.floor(G.daysElapsed/7)>=48)G={...G,isGameOver:true,gameOverReason:"Runway ended. The year is up."};
+    else if(nE<=0)G={...G,isGameOver:true,gameOverReason:"Burnout. Total collapse."};
+    else if(nM<=0)G={...G,isGameOver:true,gameOverReason:"Bankrupt. Back to the 9-to-5."};
+    pickCard();
+  },420);
+}
+
+// ── RENDER ────────────────────────────────────────────────────────────────────
+function render(){
+  const week=Math.floor(G.daysElapsed/7),month=Math.min(12,Math.floor(week/4)+1);
+  const anyDanger=G.focus<=20||G.energy<=20||G.money<=10,leth=G.energy<25;
+  let dots='';
+  for(let i=0;i<12;i++){const dn=Math.floor(week/4)>i,cu=Math.floor(week/4)===i;dots+=`<div style="width:13px;height:13px;border-radius:2px;border:1.5px solid ${(cu||dn)?'#1A1A1A':'rgba(26,26,26,.18)'};background:${dn?'#1A1A1A':cu?'transparent':'rgba(255,255,255,.5)'};transition:all .5s"></div>`;}
+  let perksH='';for(const[k,v]of Object.entries(G.perks))if(v)perksH+=`<span style="background:#1A1A1A;color:white;font-size:6px;padding:1px 6px;border-radius:9999px;text-transform:uppercase;letter-spacing:.12em">${k}</span>`;
+  const statBar=(!G.isGameOver&&!G.namingPhase)?`<div id="sb" style="display:flex;justify-content:center;align-items:flex-end;gap:8px;padding:14px 0 10px;border-bottom:1px solid rgba(26,26,26,.1);min-height:110px">${brainIcon(G.focus)}${divider}${coffeeIcon(G.energy)}${divider}${walletIcon(G.money)}</div>`:'';
+  let main='';
+  if(G.isGameOver){
+    main=`<div style="width:100%;background:white;border:3px solid #1A1A1A;padding:32px 28px;text-align:center;box-shadow:10px 10px 0 0 #1A1A1A"><div style="display:flex;justify-content:center;margin-bottom:14px"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55-.47.98-.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg></div><h2 class="serif" style="font-size:22px;font-weight:900;margin:0 0 8px;text-transform:uppercase;letter-spacing:.2em">Year Review</h2><p style="font-weight:800;font-size:28px;margin:0 0 6px">$${G.mrr.toLocaleString()} MRR</p><p class="serif" style="font-style:italic;font-size:16px;opacity:.65;margin:0 0 24px">"${esc(G.gameOverReason)}"</p><button onclick="doReset()" style="width:100%;padding:14px 0;background:#1A1A1A;color:white;font-weight:700;border:none;cursor:pointer;font-size:12px;letter-spacing:.18em;text-transform:uppercase">&#8635; Reboot</button></div>`;
+  } else if(G.namingPhase){
+    main=`<div style="width:100%;background:white;border:3px solid #1A1A1A;padding:32px 28px;box-shadow:10px 10px 0 0 #1A1A1A"><div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.3em;opacity:.35;margin-bottom:20px">Name your doomed startup</div><div style="position:relative;margin-bottom:16px"><input id="ni" type="text" placeholder="e.g. TurboGrind For Cats.io\u2026" autocomplete="off" style="width:100%;background:transparent;border:none;border-bottom:2px solid #1A1A1A;padding:6px 36px 6px 4px;font-size:24px;font-style:italic;outline:none;font-family:'Crimson Pro',Georgia,serif"/><button onclick="doRandName()" style="position:absolute;right:2px;top:8px;background:none;border:none;cursor:pointer;opacity:.38;padding:0;line-height:0"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg></button></div><button id="sb2" onclick="doShip()" style="width:100%;padding:13px 0;background:#1A1A1A;color:white;font-weight:700;display:flex;align-items:center;justify-content:center;gap:8px;border:none;cursor:pointer;font-size:11px;letter-spacing:.22em;text-transform:uppercase;opacity:.22;transition:opacity .2s">Let's ship it &#8250;</button></div>`;
+  } else if(bankData){
+    const grim=bankData.mrr<1000;
+    main=`<div class="sti" style="width:100%;background:white;border:2px solid #1A1A1A;padding:28px 32px;box-shadow:5px 5px 0 0 #1A1A1A"><div style="font-size:9px;font-weight:700;letter-spacing:.5em;text-transform:uppercase;opacity:.3;margin-bottom:20px">Month 6 \u2014 Financial Summary</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px">${[['Savings','$'+bankData.money+'k'],['MRR','$'+bankData.mrr.toLocaleString()],['Runway',bankData.runway+' mo'],['Months left',''+bankData.monthsLeft]].map(([l,v])=>`<div style="border-bottom:1px solid rgba(26,26,26,.1);padding-bottom:10px"><div style="font-size:9px;font-weight:700;letter-spacing:.3em;text-transform:uppercase;opacity:.35;margin-bottom:4px">${l}</div><div class="serif" style="font-size:28px;font-weight:900;line-height:1;letter-spacing:-.03em">${v}</div></div>`).join('')}</div>${grim?`<p class="serif" style="font-style:italic;font-size:13px;opacity:.5;margin:0 0 20px;line-height:1.5">"You needed $3k MRR by now. The math is patient. It will wait."</p>`:''}<button onclick="bankData=null;pickCard();" style="width:100%;padding:13px 0;background:#1A1A1A;color:white;font-weight:700;border:none;cursor:pointer;font-size:11px;letter-spacing:.22em;text-transform:uppercase">Keep going</button></div>`;
+  } else if(card){
+    const isAlex=!!alexMsg,bc=anyDanger?'#DC2626':'#1A1A1A',bg=leth?'#FAF7EF':'white',sh=anyDanger?'':'0 6px 28px rgba(26,26,26,.07),5px 5px 0 0 rgba(26,26,26,.07)',fcls=anyDanger?'sc cdp':'sc cfl';
+    let ci='';
+    if(isAlex){
+      ci=`<div style="display:flex;align-items:center;gap:8px;margin-bottom:12px"><div style="width:32px;height:32px;border-radius:50%;background:#1A1A1A;display:flex;align-items:center;justify-content:center;color:white;font-size:12px;font-weight:800;flex-shrink:0">A</div><div><div style="font-size:11px;font-weight:800;letter-spacing:.05em">Alex</div><div style="font-size:9px;opacity:.4;text-transform:uppercase;letter-spacing:.3em;font-weight:700">Your first user</div></div></div><div style="font-size:9px;font-weight:700;opacity:.35;text-transform:uppercase;letter-spacing:.25em;margin-bottom:6px">Re: ${esc(alexMsg.s)}</div><p class="serif" style="font-size:16px;line-height:1.55;font-style:italic;margin:0 0 auto;font-weight:700">"${esc(alexMsg.b)}"</p><div style="min-height:26px;display:flex;align-items:center;justify-content:center;padding-top:12px"><span id="hint" style="font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.35em;opacity:.15">&#8592; swipe to reply &#8594;</span></div>`;
+    } else {
+      ci=`<div style="text-align:center"><span style="font-size:9px;font-weight:700;letter-spacing:.5em;text-transform:uppercase;opacity:.32">${card.ch}</span></div><p class="serif" style="text-align:center;font-weight:700;line-height:1.45;margin:0;font-size:${card.ch==='THE OBSERVER'?20:23}px;font-style:${card.ch==='THE OBSERVER'?'italic':'normal'}">"${esc(card.qFn?card.qFn(G):card.q)}"</p><div id="cp" style="width:100%;min-height:26px;display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:4px"><span style="font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.35em;opacity:.15">&#8592; swipe to decide &#8594;</span></div>`;
     }
+    main=`<div style="position:relative;width:100%;max-width:440px;height:420px"><div id="ll" style="position:absolute;left:4px;top:50%;transform:translateY(-50%) rotate(-7deg);opacity:0;pointer-events:none;z-index:30"><div style="background:white;border:2px solid #1A1A1A;padding:5px 12px;font-size:12px;font-weight:800;text-transform:uppercase;box-shadow:3px 3px 0 rgba(26,26,26,.7);letter-spacing:.05em">${esc(card.L.label)}</div></div><div id="lr" style="position:absolute;right:4px;top:50%;transform:translateY(-50%) rotate(7deg);opacity:0;pointer-events:none;z-index:30"><div style="background:white;border:2px solid #1A1A1A;padding:5px 12px;font-size:12px;font-weight:800;text-transform:uppercase;box-shadow:3px 3px 0 rgba(26,26,26,.7);letter-spacing:.05em">${esc(card.R.label)}</div></div><div id="sc" class="${fcls}" style="position:absolute;inset:0;background:${bg};border:2px solid ${bc};border-radius:4px;padding:${isAlex?'28px 32px':'32px 36px'};display:flex;flex-direction:column;${isAlex?'':'align-items:center;'}justify-content:space-between;box-shadow:${sh};filter:${leth?'sepia(.1)':'none'}">${ci}</div></div>`;
+  }
+  const mrrH=(!G.isGameOver&&!G.namingPhase)?`<div style="text-align:right"><div class="serif" style="font-size:34px;font-weight:900;line-height:1;letter-spacing:-.04em">$${G.mrr.toLocaleString()}</div><div style="font-size:9px;font-weight:700;letter-spacing:.3em;text-transform:uppercase;opacity:.35;margin-top:1px">MRR</div><div style="display:flex;gap:3px;justify-content:flex-end;margin-top:4px;flex-wrap:wrap">${perksH}</div></div>`:'';
+  document.getElementById('root').innerHTML=`<div class="shell"><div style="display:flex;align-items:flex-start;justify-content:space-between;padding:18px 0 14px;border-bottom:2px solid #1A1A1A"><div style="display:flex;flex-direction:column;gap:5px"><div style="display:flex;gap:4px;flex-wrap:wrap">${dots}</div><div style="font-size:9px;letter-spacing:.4em;text-transform:uppercase;font-weight:700;color:rgba(26,26,26,.38)">${G.productName?esc(G.productName)+' \u00b7 ':''}Month ${month} of 12</div></div>${mrrH}</div>${statBar}<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px 0 24px">${main}</div></div>`;
+  postRender();
+}
 
-    // ── Funny name generator ──────────────────────────────────────────────────
-    const NP = ["Disrupt","Synerg","Hyper","Turbo","Mega","Blitz","Hustle","Pivotly","Scalr","Grind","Vibe","Hack","Quantum","Lean","No-Code","Chad","Biz","Cringe"];
-    const NS = ["ify",".io","ly","hub","DAO","GPT","OS","XL","Pro","360","Bot","AI","Bro","Token","Ninja","Wizard","Unicorn","SaaS"];
-    const NM = [" 2.0"," For Cats"," But Better"," On Blockchain"," With AI"," Enterprise"," Premium"," For Founders"," At Scale"," (Pivot Edition)"," \u2014 Now With ChatGPT"," For Dogs Too"];
-    function funnyName() {
-      return NP[~~(Math.random()*NP.length)] + (Math.random()>.45 ? NM[~~(Math.random()*NM.length)] : "") + NS[~~(Math.random()*NS.length)];
-    }
+function postRender(){
+  if(G.namingPhase){
+    const ni=document.getElementById('ni'),sb2=document.getElementById('sb2');
+    if(ni){ni.value=tempName;ni.focus();ni.setSelectionRange(ni.value.length,ni.value.length);ni.oninput=()=>{tempName=ni.value;if(sb2)sb2.style.opacity=ni.value.trim()?'1':'.22';};ni.onkeydown=e=>{if(e.key==='Enter'&&ni.value.trim())doShip();};if(tempName.trim()&&sb2)sb2.style.opacity='1';}
+    return;
+  }
+  const sc=document.getElementById('sc');
+  if(sc){sc.addEventListener('mousedown',onDS,{passive:false});sc.addEventListener('touchstart',onDS,{passive:false});}
+}
 
-    // ── Card database ─────────────────────────────────────────────────────────
-    const CARDS = [
-      {id:"intro",  ch:"THE OBSERVER",   q:"You've been talking about this for years. The spreadsheets are done. The 'safe' path is rotting. You're standing at the edge. Jump?",
-        L:{label:"Jump",focus:0,energy:0,money:0,mrr:0,days:0,next:"naming"}, R:{label:"Jump",focus:0,energy:0,money:0,mrr:0,days:0,next:"naming"}},
-      {id:"c1",  ch:"THE INNER VOICE", q:"Day 1. The bridge is behind you. How do we start?",
-        L:{label:"Quit Job",   focus:-5, energy:-10,money:-30,mrr:500, days:7},  R:{label:"Side Hustle",focus:-10,energy:-15,money:5,  mrr:100, days:14}},
-      {id:"c2",  ch:"READ & REFLECT",  q:"Read 'Buy Back Your Time' by Dan Martell?", w:.1, min:30,
-        L:{label:"Study",      focus:15, energy:20, money:-5, mrr:0,   days:3, perk:"buyBackTime"}, R:{label:"Ignore",focus:-5,energy:-5,money:0,mrr:50,days:5}},
-      {id:"c3",  ch:"READ & REFLECT",  q:"Study Naval's 'Almanack' for leverage?",    w:.1, min:60,
-        L:{label:"Seek",       focus:5,  energy:5,  money:0,  mrr:800, days:4, perk:"leverage"},    R:{label:"Ignore",focus:-10,energy:-5,money:0,mrr:200,days:6}},
-      {id:"c7",  ch:"THE USER",        q:"Product is buggy. Ship now or polish?",      w:.6,
-        L:{label:"Ship It",    focus:-10,energy:-5, money:0,  mrr:150, days:3},  R:{label:"Polish",   focus:-5, energy:-15,money:-2,mrr:50,  days:10}},
-      {id:"c8",  ch:"THE CODE",        q:"Tech debt is slowing you down. Rewrite?",    w:.6,
-        L:{label:"Rewrite",    focus:25, energy:-20,money:0,  mrr:0,   days:14}, R:{label:"Patch",    focus:-15,energy:-5, money:0, mrr:0,   days:2}},
-      {id:"c13", ch:"THE GROWER",      q:"Launch on Product Hunt today?",              w:.4, min:20,
-        L:{label:"Launch",     focus:-15,energy:-25,money:-5, mrr:1200,days:2},  R:{label:"Wait",     focus:5,  energy:5,  money:0, mrr:-100,days:1}},
-      {id:"c19", ch:"THE CLOUD",       q:"AWS bill tripled. Spend 5 days optimizing?", w:.4,
-        L:{label:"Optimize",   focus:10, energy:-10,money:0,  mrr:0,   days:5},  R:{label:"Pay",      focus:0,  energy:0,  money:-10,mrr:0,  days:1}},
-      {id:"c22", ch:"THE BODY",        q:"You have a fever. Work or Sleep?",            w:.5,
-        L:{label:"Work",       focus:-20,energy:-40,money:0,  mrr:100, days:1},  R:{label:"Sleep",    focus:5,  energy:25, money:0, mrr:0,   days:2}},
-      {id:"c27", ch:"THE OUTAGE",      q:"Servers are down. It's 3 AM.",               w:.4,
-        L:{label:"Fix Now",    focus:-5, energy:-25,money:0,  mrr:-50, days:1},  R:{label:"Sleep",    focus:-15,energy:10, money:0, mrr:-300,days:1}},
-      {id:"c30", ch:"THE BURN",        q:"You feel completely empty today. Force it?",  w:.3,
-        L:{label:"Force It",   focus:-20,energy:-15,money:0,  mrr:50,  days:3},  R:{label:"Walk Away",focus:15, energy:20, money:0, mrr:0,   days:1}},
-      {id:"c40", ch:"THE AI",          q:"Investors only care about AI. Add an AI wrapper?", w:.5,
-        L:{label:"Grift",      focus:-20,energy:-15,money:-1, mrr:1000,days:10}, R:{label:"Stay Pure",focus:10, energy:5,  money:0, mrr:100, days:0}},
-    ];
+// ── DRAG HANDLERS ─────────────────────────────────────────────────────────────
+function onDS(e){
+  if(G.isGameOver||G.namingPhase||bankData)return;
+  e.preventDefault();
+  const t=e.touches?e.touches[0]:e;
+  drag={on:true,sx:t.clientX,sy:t.clientY,x:0,y:0};
+  const sc=document.getElementById('sc');if(sc){sc.className='sc';sc.style.transition='none';}
+}
+function onDM(e){
+  if(!drag.on)return;
+  const t=e.touches?e.touches[0]:e;
+  drag.x=t.clientX-drag.sx;drag.y=t.clientY-drag.sy;
+  const sc=document.getElementById('sc');
+  if(sc)sc.style.transform=`translate(${drag.x}px,${drag.y*.35}px) rotate(${drag.x/18}deg)`;
+  const ll=document.getElementById('ll'),lr=document.getElementById('lr');
+  if(ll)ll.style.opacity=Math.max(0,-drag.x/(T*.55));
+  if(lr)lr.style.opacity=Math.max(0,drag.x/(T*.55));
+}
+function onDE(){
+  if(!drag.on)return;drag.on=false;
+  if(drag.x>T)decide('right');
+  else if(drag.x<-T)decide('left');
+  else{
+    const sc=document.getElementById('sc');
+    if(sc){sc.style.transition='transform .48s cubic-bezier(.175,.885,.32,1.275)';sc.style.transform='';const anyD=G.focus<=20||G.energy<=20||G.money<=10;sc.className='sc '+(anyD?'cdp':'cfl');}
+    ['ll','lr'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.opacity='0';});
+  }
+}
+document.addEventListener('mousemove',onDM);document.addEventListener('mouseup',onDE);
+document.addEventListener('touchmove',onDM,{passive:false});document.addEventListener('touchend',onDE);document.addEventListener('touchcancel',onDE);
 
-    const INIT = {
-      productName:'', namingPhase:false,
-      focus:100, energy:80, money:50, daysElapsed:0, mrr:0,
-      isGameOver:false, gameOverReason:'', history:[],
-      perks:{ buyBackTime:false, deepWork:false, leverage:false }
-    };
+// ── ACTIONS ───────────────────────────────────────────────────────────────────
+function doReset(){G=freshGame();card=null;alexMsg=null;bankData=null;cardHist=[];tempName='';shakeSet.clear();drag={on:false,sx:0,sy:0,x:0,y:0};pickCard('intro');}
+function doShip(){const ni=document.getElementById('ni');if(!ni||!ni.value.trim())return;G.productName=ni.value.trim();G.namingPhase=false;pickCard('S01');}
+function doRandName(){const ni=document.getElementById('ni');if(ni){const n=funnyName();ni.value=n;tempName=n;const sb2=document.getElementById('sb2');if(sb2)sb2.style.opacity='1';}}
 
-    // ── BRAIN icon — fills from bottom ────────────────────────────────────────
-    function BrainIcon({ pct, preview, isShaking, focusLbl, onTooltip }) {
-      const danger  = pct <= 20;
-      const warning = pct <= 40 && pct > 20;
-      const color   = danger ? '#DC2626' : warning ? '#D97706' : '#1A1A1A';
-      const previewColor = preview > 0 ? '#16a34a' : '#DC2626';
-      const projPct = preview != null ? Math.max(0, Math.min(100, pct + preview)) : null;
-      const brainPath1 = "M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96-.46 2.5 2.5 0 0 1-1.7-3.43 3 3 0 0 1 .34-5.58 2.5 2.5 0 0 1 1.32-4.24A2.5 2.5 0 0 1 9.5 2Z";
-      const brainPath2 = "M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96-.46 2.5 2.5 0 0 0 1.7-3.43 3 3 0 0 0-.34-5.58 2.5 2.5 0 0 0-1.32-4.24A2.5 2.5 0 0 0 14.5 2Z";
-      const fillY    = 24 - (24 * pct / 100);
-      const projFillY = projPct != null ? 24 - (24 * projPct / 100) : null;
-      return (
-        <button onClick={onTooltip} className={isShaking ? 'sfs-shake' : ''}
-          style={{display:'flex',flexDirection:'column',alignItems:'center',gap:6,background:'none',border:'none',cursor:'pointer',padding:'4px 12px'}}>
-          <svg width="44" height="44" viewBox="0 0 24 24" overflow="visible">
-            <defs>
-              <clipPath id="brain-fill"><rect x="0" y={fillY} width="24" height="24"/></clipPath>
-              {projFillY != null && <clipPath id="brain-preview"><rect x="0" y={projFillY} width="24" height="24"/></clipPath>}
-            </defs>
-            <g opacity="0.12" stroke={color} strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round">
-              <path d={brainPath1}/><path d={brainPath2}/>
-            </g>
-            {projFillY != null && (
-              <g clipPath="url(#brain-preview)" opacity="0.35" stroke={previewColor} strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round">
-                <path d={brainPath1}/><path d={brainPath2}/>
-              </g>
-            )}
-            <g clipPath="url(#brain-fill)" stroke={color} strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" className={danger ? 'sfs-pulse' : ''}>
-              <path d={brainPath1}/><path d={brainPath2}/>
-            </g>
-          </svg>
-          <span style={{fontSize:10,fontWeight:800,textTransform:'uppercase',letterSpacing:'0.12em',color,lineHeight:1}}>{focusLbl}</span>
-          <span style={{fontSize:9,fontWeight:700,lineHeight:1,height:13,display:'flex',alignItems:'center',justifyContent:'center',
-            color: preview != null && preview !== 0 ? (preview>0?'#16a34a':'#DC2626') : 'transparent'}}
-            className={preview != null && preview !== 0 ? 'sfs-din' : ''}>
-            {preview != null && preview !== 0 ? (preview>0?'▲':'▼') : '\u200b'}
-          </span>
-        </button>
-      );
-    }
-
-    // ── COFFEE icon — liquid drains from top down ─────────────────────────────
-    function CoffeeIcon({ pct, preview, isShaking, onTooltip }) {
-      const danger  = pct <= 20;
-      const warning = pct <= 40 && pct > 20;
-      const color   = danger ? '#DC2626' : warning ? '#D97706' : '#92400e';
-      const previewColor = preview > 0 ? '#16a34a' : '#DC2626';
-      const projPct = preview != null ? Math.max(0, Math.min(100, pct + preview)) : null;
-      // Cup body: y=8..21 (13 units). At 100%: liquid surface at y=8 (top). At 0%: surface at y=21 (empty).
-      const CUP_TOP = 8, CUP_H = 13;
-      const fillTop    = CUP_TOP + CUP_H * (1 - pct / 100);
-      const projFillTop = projPct != null ? CUP_TOP + CUP_H * (1 - projPct / 100) : null;
-      return (
-        <button onClick={onTooltip} className={isShaking ? 'sfs-shake' : ''}
-          style={{display:'flex',flexDirection:'column',alignItems:'center',gap:6,background:'none',border:'none',cursor:'pointer',padding:'4px 12px'}}>
-          <svg width="44" height="44" viewBox="0 0 24 24" overflow="visible">
-            <defs>
-              <clipPath id="coffee-fill"><rect x="0" y={fillTop} width="24" height={23 - fillTop}/></clipPath>
-              {projFillTop != null && <clipPath id="coffee-preview"><rect x="0" y={projFillTop} width="24" height={23 - projFillTop}/></clipPath>}
-            </defs>
-            {/* Ghost outline */}
-            <g opacity="0.15" stroke={color} strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M17 8h1a4 4 0 1 1 0 8h-1"/>
-              <path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"/>
-              <line x1="6" x2="6" y1="2" y2="4"/>
-              <line x1="10" x2="10" y1="2" y2="4"/>
-              <line x1="14" x2="14" y1="2" y2="4"/>
-            </g>
-            {/* Preview ghost */}
-            {projFillTop != null && (
-              <g clipPath="url(#coffee-preview)" opacity="0.3" stroke={previewColor} strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M17 8h1a4 4 0 1 1 0 8h-1"/>
-                <path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"/>
-              </g>
-            )}
-            {/* Liquid fill — only cup body, no steam */}
-            <g clipPath="url(#coffee-fill)" stroke={color} strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" className={danger ? 'sfs-pulse' : ''}>
-              <path d="M17 8h1a4 4 0 1 1 0 8h-1"/>
-              <path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"/>
-            </g>
-            {/* Steam lines — opacity tied to energy level */}
-            <g stroke={color} strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" opacity={0.15 + (pct/100)*0.85}>
-              <line x1="6" x2="6" y1="2" y2="4"/>
-              <line x1="10" x2="10" y1="2" y2="4"/>
-              <line x1="14" x2="14" y1="2" y2="4"/>
-            </g>
-          </svg>
-          <span style={{fontSize:10,fontWeight:800,textTransform:'uppercase',letterSpacing:'0.12em',color,lineHeight:1}}>{pct}%</span>
-          <span style={{fontSize:9,fontWeight:700,lineHeight:1,height:13,display:'flex',alignItems:'center',justifyContent:'center',
-            color: preview != null && preview !== 0 ? (preview>0?'#16a34a':'#DC2626') : 'transparent'}}
-            className={preview != null && preview !== 0 ? 'sfs-din' : ''}>
-            {preview != null && preview !== 0 ? (preview>0?'▲':'▼') : '\u200b'}
-          </span>
-        </button>
-      );
-    }
-
-    // ── WALLET icon — fills from bottom ──────────────────────────────────────
-    function CashIcon({ value, preview, isShaking, onTooltip }) {
-      const danger  = value <= 10;
-      const warning = value <= 25 && value > 10;
-      const color   = danger ? '#DC2626' : warning ? '#D97706' : '#1A1A1A';
-      const previewColor = preview > 0 ? '#16a34a' : '#DC2626';
-      const fillPct    = Math.max(0, Math.min(100, (value / 80) * 100));
-      const projValue  = preview != null ? value + preview : null;
-      const projFillPct = projValue != null ? Math.max(0, Math.min(100, (projValue / 80) * 100)) : null;
-      const TOP = 3, BOT = 22, RANGE = BOT - TOP;
-      const fillY    = BOT - (RANGE * fillPct / 100);
-      const prevFillY = projFillPct != null ? BOT - (RANGE * projFillPct / 100) : null;
-      const walletP1 = "M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1";
-      const walletP2 = "M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4";
-      return (
-        <button onClick={onTooltip} className={isShaking ? 'sfs-shake' : ''}
-          style={{display:'flex',flexDirection:'column',alignItems:'center',gap:6,background:'none',border:'none',cursor:'pointer',padding:'4px 12px'}}>
-          <svg width="44" height="44" viewBox="0 0 24 24" overflow="visible">
-            <defs>
-              <clipPath id="wallet-fill"><rect x="0" y={fillY} width="24" height={BOT - fillY + 2}/></clipPath>
-              {prevFillY != null && <clipPath id="wallet-preview"><rect x="0" y={prevFillY} width="24" height={BOT - prevFillY + 2}/></clipPath>}
-            </defs>
-            <g opacity="0.12" stroke={color} strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round">
-              <path d={walletP1}/><path d={walletP2}/>
-            </g>
-            {prevFillY != null && (
-              <g clipPath="url(#wallet-preview)" opacity="0.32" stroke={previewColor} strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round">
-                <path d={walletP1}/><path d={walletP2}/>
-              </g>
-            )}
-            <g clipPath="url(#wallet-fill)" stroke={color} strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" className={danger ? 'sfs-pulse' : ''}>
-              <path d={walletP1}/><path d={walletP2}/>
-            </g>
-          </svg>
-          <span style={{fontSize:10,fontWeight:800,letterSpacing:'0.04em',color,lineHeight:1}}>${value}k</span>
-          <span style={{fontSize:9,fontWeight:700,lineHeight:1,height:13,display:'flex',alignItems:'center',justifyContent:'center',
-            color: preview != null && preview !== 0 ? (preview>0?'#16a34a':'#DC2626') : 'transparent'}}
-            className={preview != null && preview !== 0 ? 'sfs-din' : ''}>
-            {preview != null && preview !== 0 ? (preview>0?`\u25b2+$${preview}k`:`\u25bc$${Math.abs(preview)}k`) : '\u200b'}
-          </span>
-        </button>
-      );
-    }
-
-    // ── Delta badge ───────────────────────────────────────────────────────────
-    function Badge({ value, label }) {
-      if (!value) return null;
-      const pos = value > 0;
-      const fmt = label==='Cash' ? `${pos?'+':''}$${value}k` : label==='MRR' ? `${pos?'+':''}$${value}` : `${pos?'+':''}${value}%`;
-      return (
-        <span className="sfs-din" style={{display:'inline-flex',alignItems:'center',gap:2,fontSize:9,fontWeight:700,
-          padding:'2px 7px',borderRadius:2,border:`1px solid ${pos?'#4ade80':'#f87171'}`,
-          background:pos?'#f0fdf4':'#fff1f2',color:pos?'#15803d':'#b91c1c'}}>
-          {pos?'▲':'▼'} {fmt}
-        </span>
-      );
-    }
-
-    // ── App ───────────────────────────────────────────────────────────────────
-    function App() {
-      const [game,     setGame]     = useState(INIT);
-      const [card,     setCard]     = useState(null);
-      const [shaking,  setShaking]  = useState({});
-      const [drag,     setDrag]     = useState({x:0,y:0});
-      const [dragging, setDragging] = useState(false);
-      const [dragStart,setDragStart]= useState(null);
-      const [exitDir,  setExitDir]  = useState(null);
-      const [tempName, setTempName] = useState("");
-      const hist = useRef([]);
-
-      const T         = 110;
-      const lethargic = game.energy < 25;
-      const dragPct   = Math.min(1, Math.abs(drag.x) / T);
-      const dragDir   = drag.x > 0 ? 'right' : drag.x < 0 ? 'left' : null;
-      const preview   = dragDir && card && dragPct > 0.12 ? (dragDir==='left' ? card.L : card.R) : null;
-      const anyDanger = game.focus<=20 || game.energy<=20 || game.money<=10;
-      const week      = Math.floor(game.daysElapsed / 7);
-      const month     = Math.min(12, Math.floor(week / 4) + 1);
-
-      const pickCard = useCallback((id) => {
-        setExitDir(null); setDrag({x:0,y:0});
-        if (id) { setCard(CARDS.find(c => c.id === id)); return; }
-        let pool = CARDS.filter(c => {
-          if (c.id==="intro"||c.id==="c1") return false;
-          if (hist.current.includes(c.id)) return false;
-          if (c.min && game.daysElapsed < c.min) return false;
-          return true;
-        });
-        if (!pool.length) {
-          hist.current = [];
-          pool = CARDS.filter(c => c.id!=="intro"&&c.id!=="c1"&&(!c.min||game.daysElapsed>=c.min));
-        }
-        const total = pool.reduce((a,c) => a+(c.w||1), 0);
-        let r = Math.random()*total;
-        for (const c of pool) {
-          if (r < (c.w||1)) { setCard(c); hist.current.push(c.id); setGame(p=>({...p,history:[...p.history,c.id]})); break; }
-          r -= (c.w||1);
-        }
-      }, [game.daysElapsed]);
-
-      useEffect(() => { pickCard("intro"); }, []);
-
-      const decide = (dir) => {
-        const eff = dir==='left' ? card.L : card.R;
-        setExitDir(dir);
-        setTimeout(() => {
-          if (eff.next==="naming") { setGame(p=>({...p,namingPhase:true})); return; }
-          setGame(prev => {
-            const perks = {...prev.perks};
-            if (eff.perk) perks[eff.perk] = true;
-            const tm = lethargic ? 2 : 1;
-            const nF = Math.min(100,Math.max(0, prev.focus  + (eff.focus||0)));
-            const nE = Math.min(100,Math.max(0, prev.energy + (eff.energy||0)));
-            const nM = Math.max(0, prev.money + (eff.money||0));
-            const sh = {};
-            if(nF<=20&&prev.focus>20)  sh.focus=true;
-            if(nE<=20&&prev.energy>20) sh.energy=true;
-            if(nM<=10&&prev.money>10)  sh.money=true;
-            if(Object.keys(sh).length){ setShaking(sh); setTimeout(()=>setShaking({}),500); }
-            const ns = {...prev, perks, daysElapsed:prev.daysElapsed+Math.ceil((eff.days||0)*tm),
-              focus:nF, energy:nE, money:nM,
-              mrr:prev.mrr+(perks.leverage?Math.ceil((eff.mrr||0)*1.2):(eff.mrr||0))};
-            if(ns.mrr>=10000)                    return{...ns,isGameOver:true,gameOverReason:"Unicorn Status! $10k MRR reached."};
-            if(Math.floor(ns.daysElapsed/7)>=48) return{...ns,isGameOver:true,gameOverReason:"Runway ended. The year is up."};
-            if(ns.energy<=0)                     return{...ns,isGameOver:true,gameOverReason:"Burnout. Total physical collapse."};
-            if(ns.money<=0)                      return{...ns,isGameOver:true,gameOverReason:"Bankrupt. Back to the 9-to-5."};
-            return ns;
-          });
-          eff.next && eff.next!=="naming" ? pickCard(eff.next) : pickCard();
-        }, 420);
-      };
-
-      const onStart = (e) => {
-        if(game.isGameOver||game.namingPhase) return;
-        const cx=e.touches?e.touches[0].clientX:e.clientX, cy=e.touches?e.touches[0].clientY:e.clientY;
-        setDragStart({x:cx,y:cy}); setDragging(true);
-      };
-      const onMove = (e) => {
-        if(!dragging||!dragStart) return;
-        setDrag({x:(e.touches?e.touches[0].clientX:e.clientX)-dragStart.x, y:(e.touches?e.touches[0].clientY:e.clientY)-dragStart.y});
-      };
-      const onEnd = () => {
-        if(!dragging) return;
-        setDragging(false);
-        if(drag.x>T) decide('right'); else if(drag.x<-T) decide('left'); else setDrag({x:0,y:0});
-        setDragStart(null);
-      };
-
-      const reset = () => { hist.current=[]; setGame(INIT); setTempName(""); pickCard("intro"); };
-
-      // shared styles
-      const S = { shell:{ flex:1,display:'flex',flexDirection:'column',width:'100%',maxWidth:560,margin:'0 auto',padding:'0 20px' } };
-
-      return (
-        <div className="sfs" onMouseMove={onMove} onMouseUp={onEnd} onMouseLeave={onEnd} onTouchMove={onMove} onTouchEnd={onEnd}>
-
-          <div style={S.shell}>
-
-            {/* ── Top bar ── */}
-            <div style={{display:'flex',alignItems:'flex-start',justifyContent:'space-between',padding:'18px 0 14px',borderBottom:'2px solid #1A1A1A'}}>
-              <div style={{display:'flex',flexDirection:'column',gap:5}}>
-                <div style={{display:'flex',gap:4,flexWrap:'wrap'}}>
-                  {[...Array(12)].map((_,i) => {
-                    const done = Math.floor(week/4) > i, cur = Math.floor(week/4) === i;
-                    return <div key={i} style={{width:13,height:13,borderRadius:2,
-                      border:`1.5px solid ${cur||done?'#1A1A1A':'rgba(26,26,26,0.18)'}`,
-                      background:done?'#1A1A1A':cur?'transparent':'rgba(255,255,255,0.5)',transition:'all 0.5s'}}/>;
-                  })}
-                </div>
-                <div style={{fontSize:9,letterSpacing:'0.4em',textTransform:'uppercase',fontWeight:700,color:'rgba(26,26,26,0.38)'}}>
-                  {game.productName ? `${game.productName}  \u00b7  ` : ''}Month {month} of 12
-                </div>
-              </div>
-              {!game.isGameOver && !game.namingPhase && (
-                <div style={{textAlign:'right'}}>
-                  <div className="serif" style={{fontSize:34,fontWeight:900,lineHeight:1,letterSpacing:'-0.04em'}}>${game.mrr.toLocaleString()}</div>
-                  <div style={{fontSize:9,fontWeight:700,letterSpacing:'0.3em',textTransform:'uppercase',opacity:0.35,marginTop:1}}>MRR</div>
-                  <div style={{display:'flex',gap:3,justifyContent:'flex-end',marginTop:4,flexWrap:'wrap'}}>
-                    {Object.entries(game.perks).map(([k,v]) => v && (
-                      <span key={k} style={{background:'#1A1A1A',color:'white',fontSize:6,padding:'1px 6px',borderRadius:9999,
-                        textTransform:'uppercase',letterSpacing:'0.12em',display:'inline-flex',alignItems:'center',gap:2}}>
-                        <ISpark size={6}/>{k}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* ── Resource icons — fixed height ── */}
-            {!game.isGameOver && !game.namingPhase && (
-              <div style={{display:'flex',justifyContent:'center',alignItems:'flex-end',gap:8,
-                padding:'14px 0 10px',borderBottom:'1px solid rgba(26,26,26,0.1)',minHeight:110}}>
-                <BrainIcon  pct={game.focus}  preview={preview ? preview.focus  : null} isShaking={shaking.focus}  focusLbl={focusLabel(game.focus)} onTooltip={() => {}}/>
-                <div style={{width:1,height:60,background:'rgba(26,26,26,0.08)',alignSelf:'center'}}/>
-                <CoffeeIcon pct={game.energy} preview={preview ? preview.energy : null} isShaking={shaking.energy} onTooltip={() => {}}/>
-                <div style={{width:1,height:60,background:'rgba(26,26,26,0.08)',alignSelf:'center'}}/>
-                <CashIcon   value={game.money} preview={preview ? preview.money  : null} isShaking={shaking.money}  onTooltip={() => {}}/>
-              </div>
-            )}
-
-            {/* ── Main content ── */}
-            <div style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',padding:'16px 0 24px'}}>
-
-              {/* GAME OVER */}
-              {game.isGameOver ? (
-                <div style={{width:'100%',background:'white',border:'3px solid #1A1A1A',padding:'32px 28px',textAlign:'center',boxShadow:'10px 10px 0 0 #1A1A1A'}}>
-                  <div style={{display:'flex',justifyContent:'center',marginBottom:14}}><ITrophy size={40}/></div>
-                  <h2 className="serif" style={{fontSize:22,fontWeight:900,margin:'0 0 8px',textTransform:'uppercase',letterSpacing:'0.2em'}}>Year Review</h2>
-                  <p style={{fontWeight:800,fontSize:28,margin:'0 0 6px'}}>${game.mrr.toLocaleString()} MRR</p>
-                  <p className="serif" style={{fontStyle:'italic',fontSize:16,opacity:0.65,margin:'0 0 24px'}}>"{game.gameOverReason}"</p>
-                  <button onClick={reset} style={{width:'100%',padding:'14px 0',background:'#1A1A1A',color:'white',fontWeight:700,
-                    display:'flex',alignItems:'center',justifyContent:'center',gap:10,border:'none',cursor:'pointer',fontSize:12,letterSpacing:'0.18em',textTransform:'uppercase'}}>
-                    <IRotate size={15}/> Reboot
-                  </button>
-                </div>
-
-              /* NAMING */
-              ) : game.namingPhase ? (
-                <div style={{width:'100%',background:'white',border:'3px solid #1A1A1A',padding:'32px 28px',boxShadow:'10px 10px 0 0 #1A1A1A'}}>
-                  <div style={{fontSize:10,fontWeight:700,textTransform:'uppercase',letterSpacing:'0.3em',opacity:0.35,marginBottom:20}}>Name your doomed startup</div>
-                  <div style={{position:'relative',marginBottom:16}}>
-                    <input type="text" value={tempName} onChange={e=>setTempName(e.target.value)}
-                      onKeyDown={e=>{ if(e.key==='Enter'&&tempName.trim()){ setGame(p=>({...p,productName:tempName,namingPhase:false})); pickCard("c1"); }}}
-                      placeholder="e.g. TurboGrind For Cats.io\u2026"
-                      className="serif"
-                      style={{width:'100%',background:'transparent',border:'none',borderBottom:'2px solid #1A1A1A',
-                        padding:'6px 36px 6px 4px',fontSize:24,fontStyle:'italic',outline:'none'}}/>
-                    <button onClick={()=>setTempName(funnyName())}
-                      style={{position:'absolute',right:2,top:8,background:'none',border:'none',cursor:'pointer',opacity:0.38,padding:0,display:'flex'}}>
-                      <IRefresh size={17}/>
-                    </button>
-                  </div>
-                  <button onClick={()=>{ if(!tempName.trim()) return; setGame(p=>({...p,productName:tempName,namingPhase:false})); pickCard("c1"); }}
-                    disabled={!tempName.trim()}
-                    style={{width:'100%',padding:'13px 0',background:'#1A1A1A',color:'white',fontWeight:700,display:'flex',alignItems:'center',justifyContent:'center',
-                      gap:8,border:'none',cursor:'pointer',fontSize:11,letterSpacing:'0.22em',textTransform:'uppercase',
-                      opacity:tempName.trim()?1:0.22,transition:'opacity 0.2s'}}>
-                    Let's ship it <IChevron size={14}/>
-                  </button>
-                </div>
-
-              /* CARD */
-              ) : (
-                <div style={{position:'relative',width:'100%',maxWidth:440,height:420}}>
-
-                  {/* Choice labels */}
-                  <div style={{position:'absolute',inset:0,display:'flex',justifyContent:'space-between',
-                    padding:'0 4px',alignItems:'center',pointerEvents:'none',zIndex:30}}>
-                    <div style={{opacity:Math.max(0,-drag.x/(T*0.55)),transform:'rotate(-7deg)',display:'flex',flexDirection:'column',alignItems:'center',gap:4}}>
-                      <div style={{background:'white',border:'2px solid #1A1A1A',padding:'5px 12px',fontSize:12,fontWeight:800,
-                        textTransform:'uppercase',boxShadow:'3px 3px 0 rgba(26,26,26,0.7)',letterSpacing:'0.05em'}}>{card && card.L.label}</div>
-                      {dragDir==='left' && dragPct>0.22 && card && (
-                        <div style={{display:'flex',flexDirection:'column',gap:2,alignItems:'center'}}>
-                          {card.L.focus!==0  && <Badge value={card.L.focus}  label="Focus"/>}
-                          {card.L.energy!==0 && <Badge value={card.L.energy} label="Energy"/>}
-                          {card.L.money!==0  && <Badge value={card.L.money}  label="Cash"/>}
-                          {card.L.mrr!==0    && <Badge value={card.L.mrr}    label="MRR"/>}
-                        </div>
-                      )}
-                    </div>
-                    <div style={{opacity:Math.max(0,drag.x/(T*0.55)),transform:'rotate(7deg)',display:'flex',flexDirection:'column',alignItems:'center',gap:4}}>
-                      <div style={{background:'white',border:'2px solid #1A1A1A',padding:'5px 12px',fontSize:12,fontWeight:800,
-                        textTransform:'uppercase',boxShadow:'3px 3px 0 rgba(26,26,26,0.7)',letterSpacing:'0.05em'}}>{card && card.R.label}</div>
-                      {dragDir==='right' && dragPct>0.22 && card && (
-                        <div style={{display:'flex',flexDirection:'column',gap:2,alignItems:'center'}}>
-                          {card.R.focus!==0  && <Badge value={card.R.focus}  label="Focus"/>}
-                          {card.R.energy!==0 && <Badge value={card.R.energy} label="Energy"/>}
-                          {card.R.money!==0  && <Badge value={card.R.money}  label="Cash"/>}
-                          {card.R.mrr!==0    && <Badge value={card.R.mrr}    label="MRR"/>}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* The card */}
-                  {card && (
-                    <div onMouseDown={onStart} onTouchStart={onStart}
-                      className={[(anyDanger&&!dragging?'sfs-card-danger':''), (!dragging&&!exitDir?'sfs-float':'')].join(' ')}
-                      style={{
-                        position:'absolute',inset:0,
-                        background:lethargic?'#FAF7EF':'white',
-                        border:`2px solid ${anyDanger&&!dragging?'#DC2626':'#1A1A1A'}`,
-                        borderRadius:4, padding:'32px 36px',
-                        display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'space-between',
-                        boxShadow:anyDanger&&!dragging?undefined:'0 6px 28px rgba(26,26,26,0.07), 5px 5px 0 0 rgba(26,26,26,0.07)',
-                        cursor:dragging?'grabbing':'grab',
-                        filter:lethargic?'sepia(0.1)':'none',
-                        transform:exitDir
-                          ? `translateX(${exitDir==='left'?'-160%':'160%'}) rotate(${exitDir==='left'?'-18deg':'18deg'})`
-                          : `translate(${drag.x}px,${drag.y*0.35}px) rotate(${drag.x/18}deg)`,
-                        transition:dragging?'none':'all 0.48s cubic-bezier(0.175,0.885,0.32,1.275)',
-                      }}>
-                      <div style={{pointerEvents:'none',textAlign:'center'}}>
-                        <span style={{fontSize:9,fontWeight:700,letterSpacing:'0.5em',textTransform:'uppercase',opacity:0.32}}>{card.ch}</span>
-                      </div>
-                      <p className="serif" style={{textAlign:'center',fontWeight:700,lineHeight:1.45,margin:0,pointerEvents:'none',
-                        fontSize:card.ch==='THE OBSERVER'?20:23,
-                        fontStyle:card.ch==='THE OBSERVER'?'italic':'normal'}}>
-                        "{card.q}"
-                      </p>
-                      <div style={{width:'100%',pointerEvents:'none',minHeight:26,display:'flex',alignItems:'center',justifyContent:'center'}}>
-                        {!dragging ? (
-                          <span style={{fontSize:8,fontWeight:700,textTransform:'uppercase',letterSpacing:'0.35em',opacity:0.15}}>&larr; swipe to decide &rarr;</span>
-                        ) : preview && dragPct>0.12 ? (
-                          <div style={{display:'flex',justifyContent:'center',gap:4,flexWrap:'wrap'}}>
-                            {preview.focus!==0  && <Badge value={preview.focus}  label="Focus"/>}
-                            {preview.energy!==0 && <Badge value={preview.energy} label="Energy"/>}
-                            {preview.money!==0  && <Badge value={preview.money}  label="Cash"/>}
-                            {preview.mrr!==0    && <Badge value={preview.mrr}    label="MRR"/>}
-                            {preview.days>0     && <span className="sfs-din" style={{display:'inline-flex',alignItems:'center',gap:2,fontSize:9,fontWeight:700,
-                              padding:'2px 7px',borderRadius:2,border:'1px solid #9ca3af',background:'#f9fafb',color:'#4b5563'}}>&#9201; {preview.days}d</span>}
-                          </div>
-                        ) : null}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      );
-    }
-
-    const root = ReactDOM.createRoot(document.getElementById('root'));
-    root.render(<App />);
-  </script>
+// ── BOOT ──────────────────────────────────────────────────────────────────────
+pickCard('intro');
+</script>
 </body>
 </html>
