@@ -1,0 +1,12 @@
+{
+  "name": "foundr",
+  "version": "1.0.0",
+  "description": "Solo Founder Simulator",
+  "type": "module",
+  "scripts": {
+    "build": "echo 'Static HTML project - no build needed'"
+  },
+  "dependencies": {
+    "@vercel/analytics": "^1.4.1"
+  }
+}
